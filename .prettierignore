@@ -1,0 +1,7 @@
+pnpm-lock.yaml
+**/dist
+**/.next
+**/coverage
+**/drizzle/meta
+**/next-env.d.ts
+.turbo
