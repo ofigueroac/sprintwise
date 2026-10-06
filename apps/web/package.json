@@ -11,8 +11,11 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@repo/db": "workspace:*",
     "@repo/ui": "workspace:*",
+    "drizzle-orm": "catalog:",
     "next": "catalog:",
+    "next-auth": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
