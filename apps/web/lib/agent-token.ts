@@ -7,6 +7,7 @@ import {
   type AgentRunTokenPayload,
 } from '@repo/schemas';
 
+//makes the bearer value for the agents
 export async function mintAgentRunToken(
   payload: AgentRunTokenPayload,
   secret: string

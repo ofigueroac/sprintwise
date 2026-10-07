@@ -9,6 +9,7 @@ import {
   RunErrorEventSchema,
 } from '@ag-ui/core/schemas';
 
+//types of message on the stream for AG-UI events
 export const AgUiEventSchema = z.discriminatedUnion('type', [
   RunStartedEventSchema,
   TextMessageStartEventSchema,
