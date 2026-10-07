@@ -12,8 +12,17 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@ag-ui/core": "catalog:",
     "@hono/node-server": "catalog:",
-    "hono": "catalog:"
+    "@langchain/core": "catalog:",
+    "@langchain/google-genai": "catalog:",
+    "@langchain/langgraph": "catalog:",
+    "@langchain/langgraph-checkpoint-postgres": "catalog:",
+    "@repo/db": "workspace:*",
+    "@repo/schemas": "workspace:*",
+    "hono": "catalog:",
+    "jose": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/ts-config": "workspace:*",

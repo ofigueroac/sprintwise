@@ -1,5 +1,5 @@
 {
-  "name": "@repo/schemas",
+  "name": "@repo/agent-client",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,16 +9,21 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@ag-ui/core": "catalog:",
-    "zod": "catalog:"
+    "@repo/schemas": "workspace:*",
+    "zod": "catalog:",
+    "zustand": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0"
   },
   "devDependencies": {
     "@repo/ts-config": "workspace:*",
-    "@types/node": "catalog:",
+    "@types/react": "catalog:",
     "eslint": "catalog:",
+    "react": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
