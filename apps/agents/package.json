@@ -20,6 +20,7 @@
     "@langchain/langgraph-checkpoint-postgres": "catalog:",
     "@repo/db": "workspace:*",
     "@repo/schemas": "workspace:*",
+    "drizzle-orm": "catalog:",
     "hono": "catalog:",
     "jose": "catalog:",
     "zod": "catalog:"
