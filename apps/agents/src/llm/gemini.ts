@@ -1,10 +1,10 @@
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 
+const MODEL = 'gemini-3.8-flash';
 export function createGeminiModel(apiKey: string) {
   return new ChatGoogleGenerativeAI({
     apiKey,
-    model: 'gemini-flash-latest',
+    model: MODEL,
     temperature: 0.3,
-    streaming: true,
   });
 }
