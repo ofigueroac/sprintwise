@@ -14,23 +14,41 @@ type UserTurn = {
 export function createRunStore(db: Database) {
   return {
     async recordUserTurn({ userId, projectId, runId, name, idea }: UserTurn) {
-      await db.insert(projects).values({
-        id: projectId,
-        userId,
-        name,
-        idea,
-      });
+      await db.transaction(async (transaction) => {
+        const [user] = await transaction
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
 
-      await db.insert(runs).values({
-        id: runId,
-        projectId,
-        status: 'running',
-      });
+        if (!user) {
+          throw Error(`No users row for ${userId} Sign out and back in `);
+        }
 
-      await db.insert(messages).values({
-        runId,
-        role: 'user',
-        content: idea,
+        await transaction
+          .insert(projects)
+          .values({
+            id: projectId,
+            userId,
+            name,
+            idea,
+          })
+          .onConflictDoNothing({ target: projects.id });
+
+        await transaction
+          .insert(runs)
+          .values({
+            id: runId,
+            projectId,
+            status: 'running',
+          })
+          .onConflictDoNothing({ target: runs.id });
+
+        await transaction.insert(messages).values({
+          runId,
+          role: 'user',
+          content: idea,
+        });
       });
     },
 
