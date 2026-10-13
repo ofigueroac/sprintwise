@@ -9,9 +9,10 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run"
   },
   "dependencies": {
+    "@ag-ui/core": "catalog:",
     "@repo/schemas": "workspace:*",
     "zod": "catalog:",
     "zustand": "catalog:"
