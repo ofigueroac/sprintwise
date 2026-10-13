@@ -1,7 +1,6 @@
 import { eq } from 'drizzle-orm';
-
 import type { Database } from '@repo/db';
-import { messages, projects, runs } from '@repo/db/schema';
+import { messages, projects, runs, users } from '@repo/db/schema';
 
 type UserTurn = {
   userId: string;
