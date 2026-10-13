@@ -1,4 +1,4 @@
-import { SystemMessage } from '@langchain/core/messages';
+import { AIMessage, SystemMessage } from '@langchain/core/messages';
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import type { BaseCheckpointSaver } from '@langchain/langgraph';
 import {
@@ -15,12 +15,16 @@ export function createAnalystGraph(
   checkpointer?: BaseCheckpointSaver
 ) {
   const analyst = async (state: typeof MessagesAnnotation.State) => {
-    const response = await model.invoke([
+    const stream = await model.stream([
       new SystemMessage(ANALYST_SYSTEM_PROMPT),
       ...state.messages,
     ]);
+    let response;
+    for await (const chunk of stream) {
+      response = response ? response.concat(chunk) : chunk;
+    }
 
-    return { messages: [response] };
+    return { messages: [response ?? new AIMessage('')] };
   };
 
   return new StateGraph(MessagesAnnotation)
