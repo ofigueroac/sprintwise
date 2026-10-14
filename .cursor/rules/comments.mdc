@@ -1,0 +1,20 @@
+---
+description: One-line human comments with no colons or semicolons
+alwaysApply: true
+---
+
+# Comments
+
+When adding comments, use one line of plain human language.
+
+Do not use `:` or `;` in comments.
+
+Explain why or what the next block is for, not what the syntax does.
+
+```ts
+// BAD
+// New run: wipe previous messages; mark it as running.
+
+// GOOD
+// New run wipe previous messages and mark it as in progress
+```

@@ -1,0 +1,31 @@
+---
+description: Extract Tailwind to a CSS module class when a tag has more than two utilities
+globs: apps/web/**/*.{tsx,jsx}
+alwaysApply: false
+---
+
+# Web class names
+
+If an HTML tag would have more than two Tailwind utilities, do not put them in `className`. Add a class in the nearest `*.module.css` and use that.
+
+Two utilities or fewer may stay on the tag.
+
+```tsx
+// BAD
+<main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-24">
+
+// GOOD
+<main className={styles.main}>
+```
+
+In the CSS module, pull tokens from the UI stylesheet and `@apply` the utilities.
+
+```css
+@reference '@repo/ui/globals.css';
+
+.main {
+  @apply mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-24;
+}
+```
+
+Do not use `style={{}}` for layout when a class would do.

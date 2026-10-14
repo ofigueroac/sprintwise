@@ -1,0 +1,22 @@
+---
+description: Import Drizzle tables from db schema and Zod from schemas
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Schemas vs database
+
+`@repo/schemas` is Zod for request bodies, tokens, and events.
+
+`@repo/db/schema` is Drizzle tables and column enums.
+
+```ts
+// BAD
+import { projects, runs } from '@repo/schemas';
+
+// GOOD
+import { projects, runs } from '@repo/db/schema';
+import { CreateRunBodySchema } from '@repo/schemas';
+```
+
+Do not import `@repo/agent-client` from a `'use server'` file just to get a status string. Use the database run status (`running`, `completed`, `failed`) when writing rows.
