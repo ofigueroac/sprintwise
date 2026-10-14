@@ -11,6 +11,7 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@repo/agent-client": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/schemas": "workspace:*",
     "@repo/ui": "workspace:*",
