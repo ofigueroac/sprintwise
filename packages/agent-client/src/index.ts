@@ -1,3 +1,15 @@
-// Public surface of the package: the reducer, the store and useAgentRun are
-// re-exported from here as week 2 progresses.
-export {};
+export {
+  initialAgentRunState,
+  reduceAgUiEvent,
+  type AgentMessage,
+  type AgentRunState,
+  type AGENT_STATUS,
+} from './reducer';
+export { streamAgentRun, type StreamAgentRunInput } from './stream';
+export {
+  createAgentRunStore,
+  type AgentRunStore,
+  type AgentRunStoreState,
+  type StartAgentRunInput,
+} from './AgentRunStore';
+export { useAgentRun } from './agentRun';
