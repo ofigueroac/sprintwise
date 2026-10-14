@@ -1,9 +1,9 @@
 export {
+  AGENT_STATUS,
   initialAgentRunState,
   reduceAgUiEvent,
   type AgentMessage,
   type AgentRunState,
-  type AGENT_STATUS,
 } from './reducer';
 export { streamAgentRun, type StreamAgentRunInput } from './stream';
 export {
