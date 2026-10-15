@@ -2,7 +2,6 @@
 
 import { randomUUID } from 'node:crypto';
 
-import { AGENT_STATUS } from '@repo/agent-client';
 import { projects, runs } from '@repo/db/schema';
 import { CreateRunBodySchema } from '@repo/schemas';
 
@@ -49,7 +48,7 @@ export async function createRunToken(idea: string) {
       await transaction.insert(runs).values({
         id: runId,
         projectId: projectID,
-        status: AGENT_STATUS.RUNNING,
+        status: 'running',
       });
     });
   } catch (error) {

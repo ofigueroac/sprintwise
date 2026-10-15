@@ -1,11 +1,21 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 import { buttonVariants } from '@repo/ui/components';
+
+import { getCurrentUser } from '@/auth';
 
 import { ChatForm } from './chatForm';
 import styles from './page.module.css';
 
-export default function ChatPage() {
+export default async function ChatPage() {
+  const user = await getCurrentUser();
+
+  // Same gate as the home form so a direct /chat URL cannot skip GitHub login
+  if (!user) {
+    redirect('/');
+  }
+
   return (
     <main className={styles.page}>
       <Link
