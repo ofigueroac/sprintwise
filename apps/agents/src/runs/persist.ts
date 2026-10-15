@@ -1,14 +1,16 @@
-import { eq } from 'drizzle-orm';
-import type { Database } from '@repo/db';
-import { messages, projects, runs, users } from '@repo/db/schema';
+import { randomUUID } from 'node:crypto'
+import { eq } from 'drizzle-orm'
+import type { Database } from '@repo/db'
+import { messages, projects, runs, stories, users } from '@repo/db/schema'
+import type { RenderKanbanArgs } from '@repo/schemas'
 
 type UserTurn = {
-  userId: string;
-  projectId: string;
-  runId: string;
-  name: string;
-  idea: string;
-};
+  userId: string
+  projectId: string
+  runId: string
+  name: string
+  idea: string
+}
 
 export function createRunStore(db: Database) {
   return {
@@ -18,10 +20,10 @@ export function createRunStore(db: Database) {
           .select({ id: users.id })
           .from(users)
           .where(eq(users.id, userId))
-          .limit(1);
+          .limit(1)
 
         if (!user) {
-          throw Error(`No users row for ${userId} Sign out and back in `);
+          throw Error(`No users row for ${userId} Sign out and back in `)
         }
 
         await transaction
@@ -32,7 +34,7 @@ export function createRunStore(db: Database) {
             name,
             idea,
           })
-          .onConflictDoNothing({ target: projects.id });
+          .onConflictDoNothing({ target: projects.id })
 
         await transaction
           .insert(runs)
@@ -41,14 +43,14 @@ export function createRunStore(db: Database) {
             projectId,
             status: 'running',
           })
-          .onConflictDoNothing({ target: runs.id });
+          .onConflictDoNothing({ target: runs.id })
 
         await transaction.insert(messages).values({
           runId,
           role: 'user',
           content: idea,
-        });
-      });
+        })
+      })
     },
 
     async recordAssistantMessage(runId: string, content: string) {
@@ -56,18 +58,45 @@ export function createRunStore(db: Database) {
         runId,
         role: 'assistant',
         content,
-      });
+      })
     },
 
     async markCompleted(runId: string) {
       await db
         .update(runs)
         .set({ status: 'completed' })
-        .where(eq(runs.id, runId));
+        .where(eq(runs.id, runId))
     },
 
     async markFailed(runId: string) {
-      await db.update(runs).set({ status: 'failed' }).where(eq(runs.id, runId));
+      await db.update(runs).set({ status: 'failed' }).where(eq(runs.id, runId))
     },
-  };
+
+    async markAwaitingApproval(runId: string) {
+      await db
+        .update(runs)
+        .set({ status: 'awaiting_approval' })
+        .where(eq(runs.id, runId))
+    },
+    async saveKanbanStories(projectId: string, args: RenderKanbanArgs) {
+      await db.delete(stories).where(eq(stories.projectId, projectId))
+
+      if (args.stories.length === 0) {
+        return
+      }
+
+      await db.insert(stories).values(
+        args.stories.map((story, index) => ({
+          id: story.id ?? randomUUID(),
+          projectId,
+          title: story.title,
+          description: story.description,
+          acceptanceCriteria: story.acceptanceCriteria,
+          status: story.status,
+          priority: story.priority,
+          position: story.position ?? index,
+        }))
+      )
+    },
+  }
 }

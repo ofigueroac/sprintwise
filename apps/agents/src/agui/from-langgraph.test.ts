@@ -1,26 +1,26 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest'
 
-import { createLangGraphAgUiMapper } from './from-langgraph';
+import { createLangGraphAgUiMapper } from './from-langgraph'
 
 const ids = {
   threadId: 'project-1',
   runId: 'run-1',
   messageId: 'message-1',
-};
+}
 
 function ai(content: unknown) {
-  return [{ getType: () => 'ai', content }, {}] as const;
+  return [{ getType: () => 'ai', content }, {}] as const
 }
 
 describe('createLangGraphAgUiMapper', () => {
   it('opens a run, streams one assistant message, then finishes', () => {
-    const mapper = createLangGraphAgUiMapper(ids);
+    const mapper = createLangGraphAgUiMapper(ids)
 
     expect(mapper.start()).toEqual({
       type: 'RUN_STARTED',
       threadId: ids.threadId,
       runId: ids.runId,
-    });
+    })
 
     expect(mapper.onChunk(ai('Hello'))).toEqual([
       {
@@ -33,7 +33,7 @@ describe('createLangGraphAgUiMapper', () => {
         messageId: ids.messageId,
         delta: 'Hello',
       },
-    ]);
+    ])
 
     expect(mapper.onChunk(ai(' world'))).toEqual([
       {
@@ -41,30 +41,30 @@ describe('createLangGraphAgUiMapper', () => {
         messageId: ids.messageId,
         delta: ' world',
       },
-    ]);
+    ])
 
     expect(mapper.end()).toEqual([
       { type: 'TEXT_MESSAGE_END', messageId: ids.messageId },
       { type: 'RUN_FINISHED', threadId: ids.threadId, runId: ids.runId },
-    ]);
-  });
+    ])
+  })
 
   it('skips non-AI messages and empty content', () => {
-    const mapper = createLangGraphAgUiMapper(ids);
+    const mapper = createLangGraphAgUiMapper(ids)
 
     expect(
       mapper.onChunk([{ getType: () => 'human', content: 'hi' }, {}])
-    ).toEqual([]);
-    expect(mapper.onChunk(ai(''))).toEqual([]);
-    expect(mapper.onChunk(ai([{ type: 'text', text: '' }]))).toEqual([]);
+    ).toEqual([])
+    expect(mapper.onChunk(ai(''))).toEqual([])
+    expect(mapper.onChunk(ai([{ type: 'text', text: '' }]))).toEqual([])
 
     expect(mapper.end()).toEqual([
       { type: 'RUN_FINISHED', threadId: ids.threadId, runId: ids.runId },
-    ]);
-  });
+    ])
+  })
 
   it('joins text parts and reports run errors', () => {
-    const mapper = createLangGraphAgUiMapper(ids);
+    const mapper = createLangGraphAgUiMapper(ids)
 
     expect(
       mapper.onChunk(
@@ -80,11 +80,50 @@ describe('createLangGraphAgUiMapper', () => {
         role: 'assistant',
       },
       { type: 'TEXT_MESSAGE_CONTENT', messageId: ids.messageId, delta: 'AB' },
-    ]);
+    ])
 
     expect(mapper.error('graph failed')).toEqual({
       type: 'RUN_ERROR',
       message: 'graph failed',
-    });
-  });
-});
+    })
+  })
+
+  it('emits one Kanban tool call when args are complete', () => {
+    const mapper = createLangGraphAgUiMapper(ids)
+    const args = { stories: [{ title: 'Book a walk' }] }
+
+    expect(
+      mapper.onChunk([
+        {
+          getType: () => 'ai',
+          content: '',
+          tool_calls: [{ id: 'tool-1', name: 'render_kanban', args: {} }],
+        },
+        {},
+      ])
+    ).toEqual([])
+
+    expect(
+      mapper.onChunk([
+        {
+          getType: () => 'ai',
+          content: '',
+          tool_calls: [{ id: 'tool-1', name: 'render_kanban', args }],
+        },
+        {},
+      ])
+    ).toEqual([
+      {
+        type: 'TOOL_CALL_START',
+        toolCallId: 'tool-1',
+        toolCallName: 'render_kanban',
+      },
+      {
+        type: 'TOOL_CALL_ARGS',
+        toolCallId: 'tool-1',
+        delta: JSON.stringify(args),
+      },
+      { type: 'TOOL_CALL_END', toolCallId: 'tool-1' },
+    ])
+  })
+})

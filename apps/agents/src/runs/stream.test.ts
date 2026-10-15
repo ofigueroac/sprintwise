@@ -1,6 +1,9 @@
-import { FakeListChatModel } from '@langchain/core/utils/testing';
-import { SignJWT } from 'jose';
-import { describe, expect, it } from 'vitest';
+import { AIMessage } from '@langchain/core/messages'
+import type { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { FakeListChatModel } from '@langchain/core/utils/testing'
+import { MemorySaver } from '@langchain/langgraph'
+import { SignJWT } from 'jose'
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   AGENT_TOKEN_AUDIENCE,
@@ -8,20 +11,20 @@ import {
   AGENT_TOKEN_ISSUER,
   AgUiEventSchema,
   type AgUiEvent,
-} from '@repo/schemas';
+} from '@repo/schemas'
 
-import { createApp } from '../app';
-import { createAnalystGraph } from '../graphs/analyst';
-import { testEnv } from '../test/env';
-import type { createRunStore } from './persist';
+import { createApp } from '../app'
+import { createAnalystGraph } from '../graphs/analyst'
+import { testEnv } from '../test/env'
+import type { createRunStore } from './persist'
 
 const ids = {
   sub: '11111111-1111-4111-8111-111111111111',
   runId: '22222222-2222-4222-8222-222222222222',
   projectId: '33333333-3333-4333-8333-333333333333',
-};
+}
 
-const reply = 'Hello from the Analyst';
+const reply = 'Hello from the Analyst'
 
 // Same shape as the real store, but it only keeps arrays in memory.
 function memoryRuns(): ReturnType<typeof createRunStore> {
@@ -30,7 +33,9 @@ function memoryRuns(): ReturnType<typeof createRunStore> {
     async recordAssistantMessage() {},
     async markCompleted() {},
     async markFailed() {},
-  };
+    async saveKanbanStories() {},
+    async markAwaitingApproval() {},
+  }
 }
 
 async function bearer(secret: string) {
@@ -44,9 +49,9 @@ async function bearer(secret: string) {
     .setAudience(AGENT_TOKEN_AUDIENCE)
     .setIssuedAt()
     .setExpirationTime(AGENT_TOKEN_EXPIRES_IN)
-    .sign(new TextEncoder().encode(secret));
+    .sign(new TextEncoder().encode(secret))
 
-  return `Bearer ${token}`;
+  return `Bearer ${token}`
 }
 
 // SSE frames look like: event: NAME , data: {json}
@@ -54,26 +59,26 @@ function eventsFromSse(body: string): AgUiEvent[] {
   return body
     .split('\n\n')
     .map((frame) => {
-      const line = frame.split('\n').find((row) => row.startsWith('data: '));
+      const line = frame.split('\n').find((row) => row.startsWith('data: '))
 
       if (!line) {
-        return null;
+        return null
       }
 
-      return AgUiEventSchema.parse(JSON.parse(line.slice('data: '.length)));
+      return AgUiEventSchema.parse(JSON.parse(line.slice('data: '.length)))
     })
-    .filter((event): event is AgUiEvent => event !== null);
+    .filter((event): event is AgUiEvent => event !== null)
 }
 
 describe('POST /runs', () => {
   it('streams RUN_STARTED, the fake reply, then RUN_FINISHED', async () => {
-    const env = testEnv();
+    const env = testEnv()
 
     // FakeListChatModel pretends to be Gemini and always returns `reply`.
     const app = createApp(env, {
       graph: createAnalystGraph(new FakeListChatModel({ responses: [reply] })),
       runs: memoryRuns(),
-    });
+    })
 
     const res = await app.request('/runs', {
       method: 'POST',
@@ -82,43 +87,43 @@ describe('POST /runs', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ idea: 'A dog walking app' }),
-    });
+    })
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(200)
 
-    const events = eventsFromSse(await res.text());
-    const types = events.map((event) => event.type);
+    const events = eventsFromSse(await res.text())
+    const types = events.map((event) => event.type)
     const text = events
       .filter((event) => event.type === 'TEXT_MESSAGE_CONTENT')
       .map((event) => event.delta)
-      .join('');
+      .join('')
 
-    expect(types[0]).toBe('RUN_STARTED');
-    expect(types).toContain('TEXT_MESSAGE_START');
-    expect(text).toBe(reply);
-    expect(types.at(-1)).toBe('RUN_FINISHED');
+    expect(types[0]).toBe('RUN_STARTED')
+    expect(types).toContain('TEXT_MESSAGE_START')
+    expect(text).toBe(reply)
+    expect(types.at(-1)).toBe('RUN_FINISHED')
 
-    const started = events[0];
-    expect(started?.type).toBe('RUN_STARTED');
+    const started = events[0]
+    expect(started?.type).toBe('RUN_STARTED')
     if (started?.type === 'RUN_STARTED') {
-      expect(started.threadId).toBe(ids.projectId);
-      expect(started.runId).toBe(ids.runId);
+      expect(started.threadId).toBe(ids.projectId)
+      expect(started.runId).toBe(ids.runId)
     }
-  });
+  })
 
   it('emits RUN_ERROR when the model throws', async () => {
-    const env = testEnv();
+    const env = testEnv()
 
     // stream() rejects so the graph never produces tokens
-    const model = new FakeListChatModel({ responses: [reply] });
+    const model = new FakeListChatModel({ responses: [reply] })
     model.stream = async () => {
-      throw new Error('Gemini is down');
-    };
+      throw new Error('Gemini is down')
+    }
 
     const app = createApp(env, {
       graph: createAnalystGraph(model),
       runs: memoryRuns(),
-    });
+    })
 
     const res = await app.request('/runs', {
       method: 'POST',
@@ -127,20 +132,77 @@ describe('POST /runs', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ idea: 'A dog walking app' }),
-    });
+    })
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(200)
 
-    const events = eventsFromSse(await res.text());
-    const types = events.map((event) => event.type);
-    const failed = events.at(-1);
+    const events = eventsFromSse(await res.text())
+    const types = events.map((event) => event.type)
+    const failed = events.at(-1)
 
     // The browser already got RUN_STARTED before the model ran
-    expect(types[0]).toBe('RUN_STARTED');
-    expect(types).not.toContain('RUN_FINISHED');
+    expect(types[0]).toBe('RUN_STARTED')
+    expect(types).not.toContain('RUN_FINISHED')
     expect(failed).toMatchObject({
       type: 'RUN_ERROR',
       message: 'Gemini is down',
-    });
-  });
-});
+    })
+  })
+
+  it('marks awaiting_approval and skips RUN_FINISHED after render_kanban', async () => {
+    const env = testEnv()
+    const markAwaitingApproval = vi.fn(async () => undefined)
+    const model = {
+      bindTools() {
+        return this
+      },
+      async stream() {
+        return (async function* () {
+          yield new AIMessage({
+            content: 'Here is the analysis.',
+            tool_calls: [
+              {
+                id: 'call-1',
+                name: 'render_kanban',
+                args: {
+                  stories: [
+                    { title: 'Book a walk' },
+                    { title: 'Pay online' },
+                    { title: 'Leave a review' },
+                  ],
+                },
+                type: 'tool_call',
+              },
+            ],
+          })
+        })()
+      },
+    } as unknown as BaseChatModel
+
+    const app = createApp(env, {
+      graph: createAnalystGraph(
+        model,
+        new MemorySaver(),
+        async () => undefined
+      ),
+      runs: { ...memoryRuns(), markAwaitingApproval },
+    })
+
+    const res = await app.request('/runs', {
+      method: 'POST',
+      headers: {
+        Authorization: await bearer(env.AGENT_JWT_SECRET),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ idea: 'A dog walking app' }),
+    })
+
+    expect(res.status).toBe(200)
+
+    const types = eventsFromSse(await res.text()).map((event) => event.type)
+    expect(types[0]).toBe('RUN_STARTED')
+    expect(types).toContain('TOOL_CALL_END')
+    expect(types).not.toContain('RUN_FINISHED')
+    expect(markAwaitingApproval).toHaveBeenCalledWith(ids.runId)
+  })
+})
