@@ -1,0 +1,35 @@
+---
+description: Match nearby code split by job keep types small keep server off client
+alwaysApply: true
+---
+
+# Senior fullstack code
+
+Copy the pattern in the nearest file. Do not add a new library store shape or folder layout unless this repo already uses it.
+
+Split by job. A component that needs its own hook (`useSortable`, `useDroppable`) lives in its own module. Do not declare components inside the render function. A React hook is only an adapter around vanilla logic.
+
+Keep types small. One named type for state plus actions. Do not write `function createX<ExistingType>()` when you meant `createStore<ExistingType>()`. Export the runtime enum not `type EnumName` if code must read `.RUNNING`.
+
+Keep server and client apart. `'use server'` must not import a `'use client'` barrel. Pages fetch and compose. Mutations live in action files.
+
+Treat failure as data. Narrow before use (`if (!result.token)`). Do not empty-`catch`. Do not fail a whole run because one skipped chunk had no text.
+
+Do not add persist immer animation or extra UI for flavor. `loading` on the button is enough.
+
+```ts
+// BAD nested card remounts on every drag
+export function KanbanBoard() {
+  return <DndContext>...</DndContext>
+  function KanbanCard() {}
+}
+
+// GOOD
+export function KanbanBoard() {
+  return <DndContext>...</DndContext>
+}
+```
+
+`KanbanCard` lives in `kanban-card.tsx` and calls `useSortable` there.
+
+Comments CSS-module extraction and schema vs db imports are other rules. Do not repeat them here.
