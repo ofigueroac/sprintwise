@@ -105,4 +105,42 @@ describe('POST /runs', () => {
       expect(started.runId).toBe(ids.runId);
     }
   });
+
+  it('emits RUN_ERROR when the model throws', async () => {
+    const env = testEnv();
+
+    // stream() rejects so the graph never produces tokens
+    const model = new FakeListChatModel({ responses: [reply] });
+    model.stream = async () => {
+      throw new Error('Gemini is down');
+    };
+
+    const app = createApp(env, {
+      graph: createAnalystGraph(model),
+      runs: memoryRuns(),
+    });
+
+    const res = await app.request('/runs', {
+      method: 'POST',
+      headers: {
+        Authorization: await bearer(env.AGENT_JWT_SECRET),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ idea: 'A dog walking app' }),
+    });
+
+    expect(res.status).toBe(200);
+
+    const events = eventsFromSse(await res.text());
+    const types = events.map((event) => event.type);
+    const failed = events.at(-1);
+
+    // The browser already got RUN_STARTED before the model ran
+    expect(types[0]).toBe('RUN_STARTED');
+    expect(types).not.toContain('RUN_FINISHED');
+    expect(failed).toMatchObject({
+      type: 'RUN_ERROR',
+      message: 'Gemini is down',
+    });
+  });
 });
