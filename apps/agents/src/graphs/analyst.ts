@@ -26,8 +26,12 @@ function hasKanbanArgs(message: object) {
   )
 }
 
+type AnalystModel = Pick<BaseChatModel, 'stream'> & {
+  bindTools?: BaseChatModel['bindTools']
+}
+
 export function createAnalystGraph(
-  model: BaseChatModel,
+  model: AnalystModel,
   checkpointer?: BaseCheckpointSaver,
   saveStories?: SaveKanbanStories
 ) {

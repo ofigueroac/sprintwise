@@ -11,14 +11,29 @@ const OriginListSchema = z
   )
   .pipe(z.array(z.url()).min(1))
 
-export const AgentEnvSchema = z.object({
-  // postgresSaver can use prepared statements and run its setup
-  DATABASE_URL: z.url(),
-  GOOGLE_API_KEY: z.string().min(1),
-  AGENT_JWT_SECRET: z.string().min(32),
-  WEB_ORIGIN: OriginListSchema,
-  PORT: z.coerce.number().int().positive().default(8787),
-})
+export const AgentEnvSchema = z
+  .object({
+    // postgresSaver can use prepared statements and run its setup
+    DATABASE_URL: z.url(),
+    GOOGLE_API_KEY: z.string().min(1).optional(),
+    AGENT_JWT_SECRET: z.string().min(32),
+    WEB_ORIGIN: OriginListSchema,
+    PORT: z.coerce.number().int().positive().default(8787),
+    // Canned Analyst reply and board with no Gemini quota
+    FAKE_LLM: z
+      .string()
+      .optional()
+      .transform((value) => value === 'true' || value === '1'),
+  })
+  .superRefine((env, ctx) => {
+    if (!env.FAKE_LLM && !env.GOOGLE_API_KEY) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['GOOGLE_API_KEY'],
+        message: 'Required unless FAKE_LLM is true',
+      })
+    }
+  })
 
 export type AgentEnv = z.infer<typeof AgentEnvSchema>
 

@@ -6,6 +6,7 @@ import { parseAgentEnv } from '@repo/schemas'
 import { createApp } from './app'
 import { createCheckpointer } from './checkpointer'
 import { createAnalystGraph } from './graphs/analyst'
+import { createFakeAnalystModel } from './llm/fake'
 import { createGeminiModel } from './llm/gemini'
 import { createRunStore } from './runs/persist'
 
@@ -17,16 +18,19 @@ const runStore = createRunStore(db)
 const checkpointer = createCheckpointer(env.DATABASE_URL)
 await checkpointer.setup()
 
-const graph = createAnalystGraph(
-  createGeminiModel(env.GOOGLE_API_KEY),
-  checkpointer,
-  (projectId, args) => runStore.saveKanbanStories(projectId, args)
+const model = env.FAKE_LLM
+  ? createFakeAnalystModel()
+  : createGeminiModel(env.GOOGLE_API_KEY ?? '')
+
+const graph = createAnalystGraph(model, checkpointer, (projectId, args) =>
+  runStore.saveKanbanStories(projectId, args)
 )
 
 const server = serve(
   { fetch: createApp(env, { graph, runs: runStore }).fetch, port: env.PORT },
   (info) => {
-    console.log(`agents listening on http://localhost:${info.port}`)
+    const mode = env.FAKE_LLM ? 'fake Analyst' : 'Gemini'
+    console.log(`agents listening on http://localhost:${info.port} (${mode})`)
   }
 )
 
