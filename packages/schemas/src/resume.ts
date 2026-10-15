@@ -6,3 +6,8 @@ export const ResumeRunBodySchema = z.object({
 })
 
 export type ResumeRunBody = z.infer<typeof ResumeRunBodySchema>
+
+export const ResumeRunIdsSchema = z.object({
+  projectId: z.uuid(),
+  runId: z.uuid(),
+})
