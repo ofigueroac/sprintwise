@@ -17,6 +17,14 @@ describe('GET /health', () => {
     expect(res.status).toBe(401)
   })
 
+  it('protects /runs/:id/resume without a bearer token', async () => {
+    const res = await createApp(testEnv()).request('/runs/run-id/resume', {
+      method: 'POST',
+    })
+
+    expect(res.status).toBe(401)
+  })
+
   it('allows the configured web origin', async () => {
     const app = createApp(testEnv({ WEB_ORIGIN: 'https://example.test' }))
 

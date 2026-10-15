@@ -6,6 +6,7 @@ import type { AgentEnv } from '@repo/schemas'
 import { agentAuth, type AgentAuthVariables } from './auth/middleware'
 import type { createAnalystGraph } from './graphs/analyst'
 import type { createRunStore } from './runs/persist'
+import { resumeRun } from './runs/resume'
 import { streamRun } from './runs/stream'
 
 export type AgentRuntime = {
@@ -35,6 +36,13 @@ export function createApp(env: AgentEnv, runtime?: AgentRuntime) {
     }
 
     return streamRun(c, runtime)
+  })
+  runs.post('/:id/resume', agentAuth(env.AGENT_JWT_SECRET), (c) => {
+    if (!runtime) {
+      return c.json({ error: 'Agent graph is not ready' }, 503)
+    }
+
+    return resumeRun(c, runtime)
   })
   app.route('/runs', runs)
 
