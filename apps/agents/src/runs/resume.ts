@@ -86,9 +86,9 @@ export function resumeRun(c: RunContext, runtime: AgentRuntime) {
       // Keep the HTTP connection open and push events as they happen.
       return streamSSE(c, async (stream) => {
         try {
-          // Command resume unblocks waitForApproval with the user's yes or no.
+          // Wrap approved so false is not treated as an empty Command
           const graphStream = await runtime.graph.stream(
-            new Command({ resume: approved }),
+            new Command({ resume: { approved } }),
             {
               streamMode: ['messages', 'updates'],
               configurable: { thread_id: token.projectId },
