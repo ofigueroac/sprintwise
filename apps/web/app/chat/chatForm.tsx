@@ -1,6 +1,11 @@
 'use client';
 
-import { useState, type ReactNode, type SubmitEvent } from 'react';
+import {
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+  type SubmitEvent,
+} from 'react';
 
 import { AGENT_STATUS, useAgentRun } from '@repo/agent-client';
 import {
@@ -56,6 +61,20 @@ export function ChatForm() {
     }
   }
 
+  function onIdeaKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    // Enter sends the idea Shift+Enter keeps a new line
+    if (
+      event.key !== 'Enter' ||
+      event.shiftKey ||
+      event.nativeEvent.isComposing
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
+  }
+
   return (
     <div className={styles.stack}>
       <form className={styles.form} onSubmit={onSubmit}>
@@ -66,11 +85,12 @@ export function ChatForm() {
             value={idea}
             disabled={busy}
             onChange={(event) => setIdea(event.target.value)}
+            onKeyDown={onIdeaKeyDown}
             placeholder="Type your product idea here"
             required
           />
           <FieldDescription>
-            The Analyst will stream a reply below.
+            Press Enter to ask the Analyst. Shift+Enter adds a new line.
           </FieldDescription>
         </Field>
         <Button
