@@ -92,4 +92,48 @@ describe('reduceAgUiEvent', () => {
       },
     ]);
   });
+
+  it('glues tool args and keeps the board payload after RUN_ERROR', () => {
+    const toolCallId = 'tool-1';
+    const state = play([
+      {
+        type: EventType.RUN_STARTED,
+        threadId: ids.threadId,
+        runId: ids.runId,
+      },
+      {
+        type: EventType.TOOL_CALL_START,
+        toolCallId,
+        toolCallName: 'render_kanban',
+      },
+      {
+        type: EventType.TOOL_CALL_ARGS,
+        toolCallId,
+        delta: '{"stories":[',
+      },
+      {
+        type: EventType.TOOL_CALL_ARGS,
+        toolCallId,
+        delta: ']}',
+      },
+      {
+        type: EventType.TOOL_CALL_END,
+        toolCallId,
+      },
+      {
+        type: EventType.RUN_ERROR,
+        message: 'save failed',
+      },
+    ]);
+
+    expect(state.status).toBe(AGENT_STATUS.ERROR);
+    expect(state.tools).toEqual([
+      {
+        id: toolCallId,
+        name: 'render_kanban',
+        argsText: '{"stories":[]}',
+        done: true,
+      },
+    ]);
+  });
 });

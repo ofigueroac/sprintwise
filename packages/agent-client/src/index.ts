@@ -4,6 +4,7 @@ export {
   reduceAgUiEvent,
   type AgentMessage,
   type AgentRunState,
+  type AgentToolCall,
 } from './reducer';
 export { streamAgentRun, type StreamAgentRunInput } from './stream';
 export {

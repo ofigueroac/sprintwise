@@ -7,7 +7,12 @@ export type AgentMessage = {
   content: string;
   done: boolean;
 };
-
+export type AgentToolCall = {
+  id: string;
+  name: string;
+  argsText: string;
+  done: boolean;
+};
 export enum AGENT_STATUS {
   IDDLE = 'idle',
   RUNNING = 'running',
@@ -20,6 +25,7 @@ export type AgentRunState = {
   threadId: string | null;
   runId: string | null;
   messages: AgentMessage[];
+  tools: AgentToolCall[];
   error: {
     message: string;
     code?: string;
@@ -32,6 +38,7 @@ export const initialAgentRunState: AgentRunState = {
   threadId: null,
   runId: null,
   messages: [],
+  tools: [],
   error: null,
 };
 
@@ -57,7 +64,27 @@ function createAssistantMessage(
   // Already in the list: swap in the updated copy.
   return messages.map((message, i) => (i === index ? next : message));
 }
+function createToolCall(
+  id: string,
+  name: string,
+  tools: AgentToolCall[],
+  update: (current: AgentToolCall) => AgentToolCall
+): AgentToolCall[] {
+  const index = tools.findIndex((tool) => tool.id === id);
+  const current = tools[index] ?? {
+    id,
+    name,
+    argsText: '',
+    done: false,
+  };
+  const next = update(current);
 
+  if (index === -1) {
+    return [...tools, next];
+  }
+
+  return tools.map((tool, i) => (i === index ? next : tool));
+}
 // Take the current UI state plus one stream event, return the next state.
 export function reduceAgUiEvent(
   state: AgentRunState,
@@ -129,6 +156,40 @@ export function reduceAgUiEvent(
         ...state,
         status: AGENT_STATUS.ERROR,
         error: { message: event.message, code: event.code },
+      };
+
+    case EventType.TOOL_CALL_START:
+      return {
+        ...state,
+        tools: createToolCall(
+          event.toolCallId,
+          event.toolCallName,
+          state.tools,
+          (current) => ({
+            ...current,
+            name: event.toolCallName,
+            done: false,
+          })
+        ),
+      };
+
+    case EventType.TOOL_CALL_ARGS:
+      return {
+        ...state,
+        tools: createToolCall(event.toolCallId, '', state.tools, (current) => ({
+          ...current,
+          argsText: current.argsText + event.delta,
+          done: false,
+        })),
+      };
+
+    case EventType.TOOL_CALL_END:
+      return {
+        ...state,
+        tools: createToolCall(event.toolCallId, '', state.tools, (current) => ({
+          ...current,
+          done: true,
+        })),
       };
   }
 }
