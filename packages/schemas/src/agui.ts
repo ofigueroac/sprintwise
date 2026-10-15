@@ -5,16 +5,22 @@ import {
   TextMessageStartEventSchema,
   TextMessageContentEventSchema,
   TextMessageEndEventSchema,
+  ToolCallStartEventSchema,
+  ToolCallArgsEventSchema,
+  ToolCallEndEventSchema,
   RunFinishedEventSchema,
   RunErrorEventSchema,
 } from '@ag-ui/core/schemas';
 
-//types of message on the stream for AG-UI events
+//adds tool calls so the Kanban can mount from the stream
 export const AgUiEventSchema = z.discriminatedUnion('type', [
   RunStartedEventSchema,
   TextMessageStartEventSchema,
   TextMessageContentEventSchema,
   TextMessageEndEventSchema,
+  ToolCallStartEventSchema,
+  ToolCallArgsEventSchema,
+  ToolCallEndEventSchema,
   RunFinishedEventSchema,
   RunErrorEventSchema,
 ]);

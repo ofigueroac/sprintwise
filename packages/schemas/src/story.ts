@@ -13,5 +13,6 @@ export const StorySchema = z.object({
   acceptanceCriteria: z.array(z.string().trim().min(1)).max(10).default([]),
   status: StoryStatusSchema.default('todo'),
   priority: StoryPrioritySchema.default('medium'),
+  position: z.number().int().nonnegative().default(0),
 });
 export type Story = z.infer<typeof StorySchema>;

@@ -15,6 +15,7 @@ describe('StorySchema', () => {
       acceptanceCriteria: [],
       status: 'todo',
       priority: 'medium',
+      position: 0,
     });
   });
 
