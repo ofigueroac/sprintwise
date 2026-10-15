@@ -1,22 +1,10 @@
-import { Button } from '@repo/ui/components/button';
+import { Button } from '@repo/ui/components';
 
-import {
-  auth,
-  getCurrentUser,
-  isAuthConfigured,
-  signIn,
-  signOut,
-} from '@/auth';
+import { getCurrentUser, isAuthConfigured } from '@/auth';
 
-async function signInWithGitHub() {
-  'use server';
-  await signIn('github');
-}
-
-async function signOutAction() {
-  'use server';
-  await signOut();
-}
+import { signInWithGitHub, signOutAction } from './auth-actions';
+import { ChatForm } from './chat/chatForm';
+import styles from './page.module.css';
 
 export default async function HomePage({
   searchParams,
@@ -24,26 +12,55 @@ export default async function HomePage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
-  const session = isAuthConfigured ? await auth() : null;
-  const user = session?.user.githubId ? await getCurrentUser() : null;
+  const user = isAuthConfigured ? await getCurrentUser() : null;
 
-  const signedIn = user ? (
-    <div className="flex flex-col gap-4">
+  return (
+    <>
+      {user ? <UserBar login={user.login} userId={user.id} /> : null}
+
+      <main className={styles.main}>
+        <h1 className={styles.title}>Sprintwise</h1>
+        <p className={styles.lead}>
+          Describe a product idea and watch an AI team turn it into user
+          stories, a Kanban board and a plan you can approve.
+        </p>
+
+        {user ? (
+          <ChatForm />
+        ) : (
+          <SignedOut authConfigured={isAuthConfigured} error={error} />
+        )}
+      </main>
+    </>
+  );
+}
+
+function UserBar({ login, userId }: { login: string; userId: string }) {
+  return (
+    <header className={styles.userBar}>
       <p>
-        Signed in as <span className="font-medium">{user.login}</span>. Saved in
-        the database as <span className="font-mono text-sm">{user.id}</span>.
+        Signed in as <span className="font-medium">{login}</span>
       </p>
+      <p className={styles.userId}>{userId}</p>
       <form action={signOutAction}>
-        <Button type="submit" variant="outline" size="lg">
+        <Button type="submit" variant="outline" size="sm">
           Sign out
         </Button>
       </form>
-    </div>
-  ) : null;
+    </header>
+  );
+}
 
-  const signedOut = (
-    <div className="flex flex-col gap-3">
-      {isAuthConfigured ? (
+function SignedOut({
+  authConfigured,
+  error,
+}: {
+  authConfigured: boolean;
+  error?: string;
+}) {
+  return (
+    <div className={styles.signedOut}>
+      {authConfigured ? (
         <form action={signInWithGitHub}>
           <Button type="submit" size="lg">
             Sign in with GitHub
@@ -61,17 +78,5 @@ export default async function HomePage({
         </p>
       ) : null}
     </div>
-  );
-
-  return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center gap-6 px-6 py-24">
-      <h1 className="text-4xl font-semibold tracking-tight">Sprintwise</h1>
-      <p className="text-lg text-muted-foreground">
-        Describe a product idea and watch an AI team turn it into user stories,
-        a Kanban board and a plan you can approve.
-      </p>
-
-      {user ? signedIn : signedOut}
-    </main>
   );
 }

@@ -1,0 +1,5 @@
+@reference '@repo/ui/globals.css';
+
+.body {
+  @apply relative flex min-h-full flex-col;
+}
