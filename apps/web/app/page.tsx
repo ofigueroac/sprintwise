@@ -1,18 +1,18 @@
-import { Button } from '@repo/ui/components';
+import { Button } from '@repo/ui/components'
 
-import { getCurrentUser, isAuthConfigured } from '@/auth';
+import { getCurrentUser, isAuthConfigured } from '@/auth'
 
-import { signInWithGitHub, signOutAction } from './auth-actions';
-import { ChatForm } from './chat/chatForm';
-import styles from './page.module.css';
+import { signInWithGitHub, signOutAction } from './auth-actions'
+import { ChatForm } from './chat/chatForm'
+import styles from './page.module.css'
 
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string }>
 }) {
-  const { error } = await searchParams;
-  const user = isAuthConfigured ? await getCurrentUser() : null;
+  const { error } = await searchParams
+  const user = isAuthConfigured ? await getCurrentUser() : null
 
   return (
     <>
@@ -32,7 +32,7 @@ export default async function HomePage({
         )}
       </main>
     </>
-  );
+  )
 }
 
 function UserBar({ login, userId }: { login: string; userId: string }) {
@@ -48,15 +48,15 @@ function UserBar({ login, userId }: { login: string; userId: string }) {
         </Button>
       </form>
     </header>
-  );
+  )
 }
 
 function SignedOut({
   authConfigured,
   error,
 }: {
-  authConfigured: boolean;
-  error?: string;
+  authConfigured: boolean
+  error?: string
 }) {
   return (
     <div className={styles.signedOut}>
@@ -78,5 +78,5 @@ function SignedOut({
         </p>
       ) : null}
     </div>
-  );
+  )
 }

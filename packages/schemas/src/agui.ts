@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 import {
   RunStartedEventSchema,
@@ -10,7 +10,7 @@ import {
   ToolCallEndEventSchema,
   RunFinishedEventSchema,
   RunErrorEventSchema,
-} from '@ag-ui/core/schemas';
+} from '@ag-ui/core/schemas'
 
 //adds tool calls so the Kanban can mount from the stream
 export const AgUiEventSchema = z.discriminatedUnion('type', [
@@ -23,6 +23,6 @@ export const AgUiEventSchema = z.discriminatedUnion('type', [
   ToolCallEndEventSchema,
   RunFinishedEventSchema,
   RunErrorEventSchema,
-]);
+])
 
-export type AgUiEvent = z.infer<typeof AgUiEventSchema>;
+export type AgUiEvent = z.infer<typeof AgUiEventSchema>

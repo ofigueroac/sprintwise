@@ -1,16 +1,16 @@
-import { eq } from 'drizzle-orm';
-import NextAuth from 'next-auth';
-import GitHub from 'next-auth/providers/github';
+import { eq } from 'drizzle-orm'
+import NextAuth from 'next-auth'
+import GitHub from 'next-auth/providers/github'
 
-import { users } from '@repo/db/schema';
+import { users } from '@repo/db/schema'
 
-import { getDb } from './lib/db';
-import { upsertGithubUser } from './lib/users';
+import { getDb } from './lib/db'
+import { upsertGithubUser } from './lib/users'
 
 // True only when the GitHub app id and secret are both set
 export const isAuthConfigured = Boolean(
   process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET
-);
+)
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   // Trust whatever host is serving this app in each environment
@@ -27,69 +27,69 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: 'jwt' },
   callbacks: {
     async signIn({ profile }) {
-      const githubProfile = readGithubProfile(profile);
+      const githubProfile = readGithubProfile(profile)
 
       // Block login if GitHub did not send an id and a username
       if (!githubProfile) {
-        return false;
+        return false
       }
 
       // Create or update the matching row in our users table
-      await upsertGithubUser(githubProfile);
+      await upsertGithubUser(githubProfile)
 
-      return true;
+      return true
     },
     async jwt({ token, profile }) {
-      const githubProfile = readGithubProfile(profile);
+      const githubProfile = readGithubProfile(profile)
 
       // On the first login stash the GitHub id inside the cookie
       if (githubProfile) {
-        token.githubId = githubProfile.id;
+        token.githubId = githubProfile.id
       }
 
-      return token;
+      return token
     },
     async session({ session, token }) {
       // Copy that GitHub id onto session.user so pages can read it
       if (typeof token.githubId === 'string') {
-        session.user.githubId = token.githubId;
+        session.user.githubId = token.githubId
       }
 
-      return session;
+      return session
     },
   },
-});
+})
 
 // The signed-in person from Neon, or null if they are logged out
 export async function getCurrentUser() {
-  const session = await auth();
-  const githubId = session?.user.githubId;
+  const session = await auth()
+  const githubId = session?.user.githubId
 
   if (!githubId) {
-    return null;
+    return null
   }
 
   const [user] = await getDb()
     .select()
     .from(users)
     .where(eq(users.githubId, githubId))
-    .limit(1);
+    .limit(1)
 
-  return user ?? null;
+  return user ?? null
 }
 
 type GithubAuthProfile = {
-  id?: string | number | null;
-  login?: string;
-  name?: string | null;
-  email?: string | null;
-  avatar_url?: string | null;
-};
+  id?: string | number | null
+  login?: string
+  name?: string | null
+  email?: string | null
+  avatar_url?: string | null
+}
 
 // Turn the raw GitHub payload into a small object we can save
 function readGithubProfile(profile: GithubAuthProfile | undefined) {
   if (profile?.id == null || profile.id === '' || !profile.login) {
-    return null;
+    return null
   }
 
   return {
@@ -98,5 +98,5 @@ function readGithubProfile(profile: GithubAuthProfile | undefined) {
     name: profile.name ?? null,
     email: profile.email ?? null,
     avatarUrl: profile.avatar_url ?? null,
-  };
+  }
 }

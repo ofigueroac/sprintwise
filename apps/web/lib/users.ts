@@ -1,14 +1,14 @@
-import { users } from '@repo/db/schema';
+import { users } from '@repo/db/schema'
 
-import { getDb } from './db';
+import { getDb } from './db'
 
 export type GithubProfile = {
-  id: string;
-  login: string;
-  name: string | null;
-  email: string | null;
-  avatarUrl: string | null;
-};
+  id: string
+  login: string
+  name: string | null
+  email: string | null
+  avatarUrl: string | null
+}
 
 export async function upsertGithubUser(profile: GithubProfile) {
   const [user] = await getDb()
@@ -29,11 +29,11 @@ export async function upsertGithubUser(profile: GithubProfile) {
         avatarUrl: profile.avatarUrl,
       },
     })
-    .returning();
+    .returning()
 
   if (!user) {
-    throw new Error('Failed to save the GitHub user');
+    throw new Error('Failed to save the GitHub user')
   }
 
-  return user;
+  return user
 }

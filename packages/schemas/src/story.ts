@@ -1,10 +1,10 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
-export const StoryStatusSchema = z.enum(['todo', 'in_progress', 'done']);
-export type StoryStatus = z.infer<typeof StoryStatusSchema>;
+export const StoryStatusSchema = z.enum(['todo', 'in_progress', 'done'])
+export type StoryStatus = z.infer<typeof StoryStatusSchema>
 
-export const StoryPrioritySchema = z.enum(['low', 'medium', 'high']);
-export type StoryPriority = z.infer<typeof StoryPrioritySchema>;
+export const StoryPrioritySchema = z.enum(['low', 'medium', 'high'])
+export type StoryPriority = z.infer<typeof StoryPrioritySchema>
 
 export const StorySchema = z.object({
   id: z.uuid(),
@@ -14,5 +14,5 @@ export const StorySchema = z.object({
   status: StoryStatusSchema.default('todo'),
   priority: StoryPrioritySchema.default('medium'),
   position: z.number().int().nonnegative().default(0),
-});
-export type Story = z.infer<typeof StorySchema>;
+})
+export type Story = z.infer<typeof StorySchema>

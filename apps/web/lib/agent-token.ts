@@ -1,11 +1,11 @@
-import { SignJWT } from 'jose';
+import { SignJWT } from 'jose'
 
 import {
   AGENT_TOKEN_AUDIENCE,
   AGENT_TOKEN_EXPIRES_IN,
   AGENT_TOKEN_ISSUER,
   type AgentRunTokenPayload,
-} from '@repo/schemas';
+} from '@repo/schemas'
 
 //makes the bearer value for the agents
 export async function mintAgentRunToken(
@@ -22,5 +22,5 @@ export async function mintAgentRunToken(
     .setAudience(AGENT_TOKEN_AUDIENCE)
     .setIssuedAt()
     .setExpirationTime(AGENT_TOKEN_EXPIRES_IN)
-    .sign(new TextEncoder().encode(secret));
+    .sign(new TextEncoder().encode(secret))
 }

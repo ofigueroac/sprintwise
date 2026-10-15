@@ -1,0 +1,36 @@
+---
+description: Prettier type imports named types and catalog versions
+alwaysApply: true
+---
+
+# Code style
+
+Match the nearest file. Let Prettier format it. It uses single quotes, no semicolons, 2-space indent, trailing commas `es5`, print width 80. Do not add `;` after statements Prettier will strip them.
+
+Import types with `import type` or an inline `type` specifier. Group imports as React, then third-party packages, then `@repo/*`, then relative, with a blank line between groups.
+
+Prefer `export type Name = { ... }` over `interface`. Prefer `export function Name` over a default export. Prefix unused arguments with `_`.
+
+Names we own are camelCase (`toolCalls`, not `tool_calls`). Leave snake_case on a library object and read it in one helper. Do not copy that shape onto our types.
+
+Put shared library versions in the workspace `catalog` and depend on them with `"catalog:"`. Depend on other packages in this repo with `"workspace:*"`.
+
+Do not restate the comments, CSS-module, schema vs db, or split-by-job rules.
+
+```ts
+// BAD
+import { AgentToolCall } from '@repo/agent-client'
+interface Props {
+  tools: AgentToolCall[]
+}
+export default function Board(props: Props) {}
+
+// GOOD
+import type { AgentToolCall } from '@repo/agent-client'
+
+export type ChatBoardProps = {
+  tools: AgentToolCall[]
+}
+
+export function ChatBoard({ tools }: ChatBoardProps) {}
+```

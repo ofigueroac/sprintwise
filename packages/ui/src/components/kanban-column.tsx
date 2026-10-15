@@ -1,30 +1,27 @@
-'use client';
+'use client'
 
-import { useDroppable } from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { useDroppable } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
-import type { Story, StoryStatus } from '@repo/schemas';
+import type { Story, StoryStatus } from '@repo/schemas'
 
-import { KanbanCard } from './kanban-card';
+import { KanbanCard } from './kanban-card'
 
 export type KanbanColumnData = {
-  id: StoryStatus;
-  label: string;
-};
+  id: StoryStatus
+  label: string
+}
 
 export function KanbanColumn({
   column,
   stories,
   disabled,
 }: {
-  column: KanbanColumnData;
-  stories: Story[];
-  disabled: boolean;
+  column: KanbanColumnData
+  stories: Story[]
+  disabled: boolean
 }) {
-  const { setNodeRef } = useDroppable({ id: column.id });
+  const { setNodeRef } = useDroppable({ id: column.id })
 
   return (
     <section
@@ -44,5 +41,5 @@ export function KanbanColumn({
         </ul>
       </SortableContext>
     </section>
-  );
+  )
 }

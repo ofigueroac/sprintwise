@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
-import type { Story } from '@repo/schemas';
+import type { Story } from '@repo/schemas'
 
-import { cn } from '@repo/ui/lib/utils';
+import { cn } from '@repo/ui/lib/utils'
 
 export type KanbanCardProps = {
-  story: Story;
-  disabled: boolean;
-};
+  story: Story
+  disabled: boolean
+}
 
 export function KanbanCard({ story, disabled }: KanbanCardProps) {
   const {
@@ -20,7 +20,7 @@ export function KanbanCard({ story, disabled }: KanbanCardProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: story.id, disabled });
+  } = useSortable({ id: story.id, disabled })
 
   return (
     <li
@@ -50,5 +50,5 @@ export function KanbanCard({ story, disabled }: KanbanCardProps) {
         ) : null}
       </button>
     </li>
-  );
+  )
 }

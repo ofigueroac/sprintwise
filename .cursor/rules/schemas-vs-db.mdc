@@ -12,11 +12,11 @@ alwaysApply: false
 
 ```ts
 // BAD
-import { projects, runs } from '@repo/schemas';
+import { projects, runs } from '@repo/schemas'
 
 // GOOD
-import { projects, runs } from '@repo/db/schema';
-import { CreateRunBodySchema } from '@repo/schemas';
+import { projects, runs } from '@repo/db/schema'
+import { CreateRunBodySchema } from '@repo/schemas'
 ```
 
 Do not import `@repo/agent-client` from a `'use server'` file just to get a status string. Use the database run status (`running`, `completed`, `failed`) when writing rows.
