@@ -32,7 +32,7 @@ export function KanbanCard({ story, disabled }: KanbanCardProps) {
       }}
       className={cn(
         'bg-background rounded-md border p-3 text-sm shadow-xs',
-        isDragging && 'z-10 opacity-70'
+        isDragging && 'z-10 opacity-0'
       )}
     >
       <button
@@ -42,13 +42,29 @@ export function KanbanCard({ story, disabled }: KanbanCardProps) {
         {...attributes}
         {...listeners}
       >
-        <span className="font-medium">{story.title}</span>
-        {story.description ? (
-          <span className="text-muted-foreground mt-1 block text-xs">
-            {story.description}
-          </span>
-        ) : null}
+        <KanbanCardBody story={story} />
       </button>
     </li>
+  )
+}
+
+export function KanbanCardOverlay({ story }: { story: Story }) {
+  return (
+    <div className="bg-background rounded-md border p-3 text-sm shadow-md">
+      <KanbanCardBody story={story} />
+    </div>
+  )
+}
+
+function KanbanCardBody({ story }: { story: Story }) {
+  return (
+    <>
+      <span className="font-medium">{story.title}</span>
+      {story.description ? (
+        <span className="text-muted-foreground mt-1 block text-xs">
+          {story.description}
+        </span>
+      ) : null}
+    </>
   )
 }
