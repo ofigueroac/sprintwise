@@ -1,19 +1,19 @@
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
-import { buttonVariants } from '@repo/ui/components';
+import { buttonVariants } from '@repo/ui/components'
 
-import { getCurrentUser } from '@/auth';
+import { getCurrentUser } from '@/auth'
 
-import { ChatForm } from './chatForm';
-import styles from './page.module.css';
+import { ChatForm } from './chatForm'
+import styles from './page.module.css'
 
 export default async function ChatPage() {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser()
 
   // Same gate as the home form so a direct /chat URL cannot skip GitHub login
   if (!user) {
-    redirect('/');
+    redirect('/')
   }
 
   return (
@@ -30,5 +30,5 @@ export default async function ChatPage() {
       </p>
       <ChatForm />
     </main>
-  );
+  )
 }

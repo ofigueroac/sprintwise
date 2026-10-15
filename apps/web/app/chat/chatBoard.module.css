@@ -1,0 +1,9 @@
+@reference '@repo/ui/globals.css';
+
+.skeleton {
+  @apply grid gap-3 md:grid-cols-3;
+}
+
+.column {
+  @apply bg-muted h-40 w-full rounded-lg;
+}

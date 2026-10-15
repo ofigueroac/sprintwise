@@ -1,13 +1,15 @@
-'use client';
+'use client'
 
 import {
+  useOptimistic,
   useState,
+  useTransition,
   type KeyboardEvent,
   type ReactNode,
   type SubmitEvent,
-} from 'react';
+} from 'react'
 
-import { AGENT_STATUS, useAgentRun } from '@repo/agent-client';
+import { AGENT_STATUS, useAgentRun } from '@repo/agent-client'
 import {
   Button,
   Field,
@@ -15,49 +17,57 @@ import {
   FieldLabel,
   Skeleton,
   Textarea,
-} from '@repo/ui/components';
+} from '@repo/ui/components'
 
-import { createRunToken } from './actions';
-import styles from './chatForm.module.css';
+import { createRunToken } from './actions'
+import { ChatBoard } from './chatBoard'
+import styles from './chatForm.module.css'
 
-const AGENTS_URL =
-  process.env.NEXT_PUBLIC_AGENTS_URL ?? 'http://localhost:8787';
-const IDEA_FIELD_ID = 'product-idea';
+const AGENTS_URL = process.env.NEXT_PUBLIC_AGENTS_URL ?? 'http://localhost:8787'
+const IDEA_FIELD_ID = 'product-idea'
 
 export function ChatForm() {
-  const [idea, setIdea] = useState('');
-  const [pending, setPending] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const { status, messages, error, start } = useAgentRun();
+  const [idea, setIdea] = useState('')
+  const [pending, setPending] = useState(false)
+  const [projectId, setProjectId] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [, startTransition] = useTransition()
+  const [optimisticIdea, addOptimisticIdea] = useOptimistic<string | null>(null)
+  const { status, messages, tools, error, start } = useAgentRun()
 
-  const trimmedIdea = idea.trim();
-  const busy = pending || status === AGENT_STATUS.RUNNING;
-  const assistantText = messages.at(-1)?.content ?? '';
-  const banner = actionError ?? error?.message ?? null;
+  const trimmedIdea = idea.trim()
+  const busy = pending || status === AGENT_STATUS.RUNNING
+  const assistantText = messages.at(-1)?.content ?? ''
+  const banner = actionError ?? error?.message ?? null
 
   async function onSubmit(event: SubmitEvent<HTMLFormElement>) {
-    event.preventDefault();
+    event.preventDefault()
     if (busy || trimmedIdea.length === 0) {
-      return;
+      return
     }
 
-    setActionError(null);
-    setPending(true);
+    setActionError(null)
+    setPending(true)
+    startTransition(() => {
+      addOptimisticIdea(trimmedIdea)
+    })
 
     try {
-      const result = await createRunToken(trimmedIdea);
+      const result = await createRunToken(trimmedIdea)
       if (!result.token) {
-        setActionError(result.error ?? 'Could not start the run');
-        return;
+        setActionError(result.error ?? 'Could not start the run')
+        return
       }
+
+      setProjectId(result.projectId ?? null)
 
       await start({
         url: `${AGENTS_URL}/runs`,
         token: result.token,
         idea: trimmedIdea,
-      });
+      })
     } finally {
-      setPending(false);
+      setPending(false)
     }
   }
 
@@ -68,11 +78,11 @@ export function ChatForm() {
       event.shiftKey ||
       event.nativeEvent.isComposing
     ) {
-      return;
+      return
     }
 
-    event.preventDefault();
-    event.currentTarget.form?.requestSubmit();
+    event.preventDefault()
+    event.currentTarget.form?.requestSubmit()
   }
 
   return (
@@ -109,16 +119,36 @@ export function ChatForm() {
         </p>
       ) : null}
 
-      <ReplyLog busy={busy} text={assistantText} />
+      <ReplyLog busy={busy} text={assistantText} userText={optimisticIdea} />
+
+      <ChatBoard
+        projectId={projectId}
+        tools={tools}
+        status={status}
+        disabled={busy}
+      />
     </div>
-  );
+  )
 }
 
-function ReplyLog({ busy, text }: { busy: boolean; text: string }) {
-  let body: ReactNode = 'The reply will stream here.';
+function ReplyLog({
+  busy,
+  text,
+  userText,
+}: {
+  busy: boolean
+  text: string
+  userText: string | null
+}) {
+  let body: ReactNode = 'The reply will stream here.'
 
-  if (text) {
-    body = text;
+  if (text || userText) {
+    body = (
+      <>
+        {userText ? <p className={styles.userBubble}>{userText}</p> : null}
+        {text ? <p className={styles.assistantBubble}>{text}</p> : null}
+      </>
+    )
   } else if (busy) {
     body = (
       <div className={styles.skeletonStack}>
@@ -126,12 +156,12 @@ function ReplyLog({ busy, text }: { busy: boolean; text: string }) {
         <Skeleton className={styles.skeletonLine} />
         <Skeleton className={styles.skeletonLineShort} />
       </div>
-    );
+    )
   }
 
   return (
     <div role="log" aria-live="polite" aria-busy={busy} className={styles.log}>
       {body}
     </div>
-  );
+  )
 }
