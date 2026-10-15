@@ -1,7 +1,19 @@
 @reference '@repo/ui/globals.css';
 
-.stack {
-  @apply flex flex-col gap-6;
+.layout {
+  @apply grid grid-cols-1 items-start gap-6 md:grid-cols-2;
+}
+
+.transcriptSummary {
+  @apply cursor-pointer text-sm font-medium md:hidden;
+}
+
+.chat {
+  @apply flex min-w-0 flex-col gap-6;
+}
+
+.board {
+  @apply flex min-w-0 flex-col gap-6;
 }
 
 .form {
@@ -9,7 +21,7 @@
 }
 
 .log {
-  @apply border-border min-h-40 whitespace-pre-wrap rounded-lg border px-4 py-3 text-sm;
+  @apply border-border min-h-40 flex-1 whitespace-pre-wrap rounded-lg border px-4 py-3 text-sm;
 }
 
 .skeletonStack {

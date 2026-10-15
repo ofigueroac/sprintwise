@@ -4,7 +4,7 @@ import { AgUiEventSchema, type AgUiEvent } from '@repo/schemas'
 export type StreamAgentRunInput = {
   url: string
   token: string
-  idea: string
+  body: unknown
   signal?: AbortSignal
   onEvent: (event: AgUiEvent) => void
 }
@@ -26,11 +26,11 @@ function parseSseBlock(block: string): AgUiEvent | null {
   return AgUiEventSchema.parse(JSON.parse(data))
 }
 
-// POST the idea with the JWT then read the live event stream
+// POST JSON with the JWT then read the live event stream
 export async function streamAgentRun({
   url,
   token,
-  idea,
+  body,
   signal,
   onEvent,
 }: StreamAgentRunInput) {
@@ -42,7 +42,7 @@ export async function streamAgentRun({
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
     },
-    body: JSON.stringify({ idea }),
+    body: JSON.stringify(body),
     signal,
   })
 

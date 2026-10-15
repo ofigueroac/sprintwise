@@ -26,16 +26,9 @@ export function ChatBoard({
   const [stories, setStories] = useState<Story[]>([])
   const [error, setError] = useState<string | null>(null)
   const tool = tools.find((call) => call.name === RENDER_KANBAN_TOOL)
-
-  useEffect(() => {
-    // A new run should not keep the previous board on screen
-    if (!disabled) {
-      return
-    }
-
-    setStories([])
-    setError(null)
-  }, [disabled])
+  // A new run wipes tools so hide the last board until stories load again
+  const boardStories = tool?.done ? stories : []
+  const boardError = tool?.done ? error : null
 
   useEffect(() => {
     // Stories are saved before interrupt so load once the run is no longer streaming
@@ -87,9 +80,9 @@ export function ChatBoard({
 
   return (
     <>
-      {error ? (
+      {boardError ? (
         <p className="text-destructive" role="alert">
-          {error}
+          {boardError}
         </p>
       ) : null}
 
@@ -101,7 +94,7 @@ export function ChatBoard({
         </div>
       ) : null}
 
-      {stories.length > 0 ? (
+      {boardStories.length > 0 ? (
         <ErrorBoundary
           fallback={
             <p className="text-destructive" role="alert">
@@ -110,7 +103,7 @@ export function ChatBoard({
           }
         >
           <KanbanBoard
-            stories={stories}
+            stories={boardStories}
             onMove={disabled ? undefined : onMove}
             disabled={disabled}
           />

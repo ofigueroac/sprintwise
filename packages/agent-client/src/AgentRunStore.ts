@@ -14,9 +14,16 @@ export type StartAgentRunInput = {
   idea: string
 }
 
-// UI state plus the two actions the screen will call
+export type ResumeAgentRunInput = {
+  url: string
+  token: string
+  approved: boolean
+}
+
+// UI state plus the actions the screen will call
 export type AgentRunStoreState = AgentRunState & {
   start: (input: StartAgentRunInput) => Promise<void>
+  resume: (input: ResumeAgentRunInput) => Promise<void>
   abort: () => void
 }
 
@@ -26,52 +33,79 @@ export function createAgentRunStore() {
     // Lives outside state because React does not need to re-render when it changes
     let controller: AbortController | null = null
 
-    return {
-      ...initialAgentRunState,
+    async function runStream(
+      url: string,
+      token: string,
+      body: unknown,
+      reset: boolean
+    ) {
+      controller?.abort()
+      controller = new AbortController()
+      const signal = controller.signal
 
-      async start(input) {
-        // A new start cancels the previous stream if it is still open
-        controller?.abort()
-        controller = new AbortController()
-
+      if (reset) {
         set({
           ...initialAgentRunState,
           status: AGENT_STATUS.RUNNING,
         })
+      } else {
+        // Resume keeps the Kanban tools and the streamed reply
+        set({
+          status: AGENT_STATUS.RUNNING,
+          error: null,
+        })
+      }
 
-        try {
-          await streamAgentRun({
-            ...input,
-            signal: controller.signal,
-            onEvent: (event) => {
-              // Feed each SSE event through the reducer
-              set(reduceAgUiEvent(get(), event))
-            },
-          })
+      try {
+        await streamAgentRun({
+          url,
+          token,
+          body,
+          signal,
+          onEvent: (event) => {
+            // Feed each SSE event through the reducer
+            set(reduceAgUiEvent(get(), event))
+          },
+        })
 
-          const current = get()
-          // The stream closed without RUN_FINISHED because the graph hit interrupt()
-          if (current.status === AGENT_STATUS.RUNNING) {
-            set({
-              status: current.tools.some((tool) => tool.done)
-                ? AGENT_STATUS.AWAITING_APPROVAL
-                : AGENT_STATUS.FINISHED,
-            })
-          }
-        } catch (error) {
-          // User hit abort so leave the last tokens on screen
-          if (controller.signal.aborted) {
-            return
-          }
-
+        const current = get()
+        // The stream closed without RUN_FINISHED because the graph hit interrupt()
+        if (current.status === AGENT_STATUS.RUNNING) {
           set({
-            status: AGENT_STATUS.ERROR,
-            error: {
-              message:
-                error instanceof Error ? error.message : 'The run failed',
-            },
+            status: current.tools.some((tool) => tool.done)
+              ? AGENT_STATUS.AWAITING_APPROVAL
+              : AGENT_STATUS.FINISHED,
           })
         }
+      } catch (error) {
+        // User hit abort so leave the last tokens on screen
+        if (signal.aborted) {
+          return
+        }
+
+        set({
+          status: AGENT_STATUS.ERROR,
+          error: {
+            message: error instanceof Error ? error.message : 'The run failed',
+          },
+        })
+      }
+    }
+
+    return {
+      ...initialAgentRunState,
+
+      async start(input) {
+        await runStream(input.url, input.token, { idea: input.idea }, true)
+      },
+
+      async resume(input) {
+        await runStream(
+          input.url,
+          input.token,
+          { approved: input.approved },
+          false
+        )
       },
 
       abort() {

@@ -136,4 +136,33 @@ describe('reduceAgUiEvent', () => {
       },
     ])
   })
+
+  it('keeps the Kanban when RUN_FINISHED arrives without a new RUN_STARTED', () => {
+    const paused = play([
+      {
+        type: EventType.RUN_STARTED,
+        threadId: ids.threadId,
+        runId: ids.runId,
+      },
+      {
+        type: EventType.TOOL_CALL_START,
+        toolCallId: 'tool-1',
+        toolCallName: 'render_kanban',
+      },
+      {
+        type: EventType.TOOL_CALL_END,
+        toolCallId: 'tool-1',
+      },
+    ])
+
+    const finished = reduceAgUiEvent(paused, {
+      type: EventType.RUN_FINISHED,
+      threadId: ids.threadId,
+      runId: ids.runId,
+    })
+
+    expect(finished.status).toBe(AGENT_STATUS.FINISHED)
+    expect(finished.tools).toHaveLength(1)
+    expect(finished.tools[0]?.done).toBe(true)
+  })
 })
