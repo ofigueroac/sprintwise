@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { eq } from 'drizzle-orm'
 import type { Database } from '@repo/db'
 import { messages, projects, runs, stories, users } from '@repo/db/schema'
-import type { RenderKanbanArgs } from '@repo/schemas'
+import { storyStatusForMilestone, type RenderKanbanArgs } from '@repo/schemas'
 
 type UserTurn = {
   userId: string
@@ -81,20 +81,20 @@ export function createRunStore(db: Database) {
     async saveKanbanStories(projectId: string, args: RenderKanbanArgs) {
       await db.delete(stories).where(eq(stories.projectId, projectId))
 
-      if (args.stories.length === 0) {
+      if (args.cards.length === 0) {
         return
       }
 
       await db.insert(stories).values(
-        args.stories.map((story, index) => ({
-          id: story.id ?? randomUUID(),
+        args.cards.map((card, index) => ({
+          id: randomUUID(),
           projectId,
-          title: story.title,
-          description: story.description,
-          acceptanceCriteria: story.acceptanceCriteria,
-          status: story.status,
-          priority: story.priority,
-          position: story.position ?? index,
+          title: card.title,
+          description: card.description,
+          acceptanceCriteria: [],
+          status: storyStatusForMilestone(card.status),
+          priority: 'medium' as const,
+          position: index,
         }))
       )
     },

@@ -4,49 +4,52 @@ import type { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { RENDER_KANBAN_TOOL } from '@repo/schemas'
 
 const FAKE_REPLY = `## Target Audience
-1. **The Culinary Explorer:** A home cook or food enthusiast who loves adding spice and heat to meals, looking for pairing inspiration, recipe ideas, and a way to track their favorite hot sauces.
-2. **The Brand Loyalist & Collector:** A dedicated fan of the Tabasco brand who wants to discover limited editions, access exclusive merch, track their tasting journey, and learn about the heritage of Avery Island.
+- **Busy Working Parents:** Households with young children needing ad-hoc, trusted local help for childcare, pet walking, or light chores on short notice.
+- **Independent Local Service Providers:** Reliable individuals (students, retirees, gig workers) looking to fill schedule gaps with local, flexible casual gigs without platform fees eating their margins.
 
 ## Core Problem
-Hot sauce lovers often stick to the same bottle out of habit because they lack inspiration for new food pairings, struggle to navigate different heat levels and flavor profiles across varieties, and have no central digital hub to engage with their favorite brand or track their tasting milestones. Existing solutions are generic recipe apps that don't cater specifically to heat-seekers or dedicated sauce collections.
+Homeowners and parents struggle to find reliable, vetted help for ad-hoc neighborhood tasks (babysitting, lawn mowing, minor repairs) without paying excessive agency fees or wading through spammy classifieds. Existing platforms either specialize in only one category or cater to large corporate jobs, making small, casual local gigs inefficient to book and coordinate.
 
-## MVP Scope
-- **In-Scope (v1):**
-  1. **Sauce Catalog & Flavor Guide:** A searchable database of Tabasco varieties with official heat ratings (Scoville units), tasting notes, and suggested food pairings.
-  2. **Personal Heat Tracker:** A profile feature allowing users to log tasted sauces, rate them, and track their personal heat tolerance journey.
-  3. **Spice-Matched Recipe Feed:** A curated list of recipes filterable by heat level and specific Tabasco variety.
-  4. **Pairing Quiz ("Find Your Match"):** An interactive quiz that recommends the ideal Tabasco sauce based on the user's current meal and preferred spice level.
-- **Out-of-Scope:**
-  - E-commerce checkout integration for buying merchandise or direct-to-consumer sauce ordering (handled via external web links for v1).
-  - Social networking features (e.g., user-generated recipe uploads and community forums).
+## Riskiest Assumptions
+- **Trust Assumption:** Users will trust strangers from a platform inside their homes for personal services like nannying or pet care without rigorous, enterprise-grade background checks.
+- **Frequency Assumption:** The demand for casual services is frequent enough to keep providers engaged, rather than users just finding one provider and taking them off-platform immediately.
+- **Supply Density Assumption:** We can acquire enough multi-talented local providers in a tight geographic radius to fulfill requests within 24–48 hours.
+- **Economics Assumption:** A transaction or subscription model can sustain operations while remaining cheaper than existing local word-of-mouth networks.
 
-## Candidate User Stories
-1. As a home cook, I want to search the Tabasco catalog by heat level and flavor profile so that I can choose the right sauce for my meal.
-2. As a spice enthusiast, I want to log the sauces I have tried and rate them so that I can track my personal heat tolerance over time.
-3. As a foodie, I want to take a quick pairing quiz based on what I am cooking so that I can get instant sauce recommendations.
-4. As a brand fan, I want to browse recipes filtered by specific Tabasco varieties so that I can cook flavorful, spicy meals at home.`
+## Proposed v1
+- **In scope:** A lightweight web or mobile interface allowing users to post a single job request across multiple categories (Handyman, Pet Walker, Nanny, Lawn Care) to a curated local pool of providers, with basic in-app messaging and manual matching.
+- **Later:** Automated algorithmic dispatch, background check integrations, and in-app escrow payment processing.`
 
 const FAKE_STORIES = {
-  stories: [
+  columns: ['To Test', 'Building', 'Validated'],
+  cards: [
     {
-      title: 'Search the catalog by heat and flavor',
+      title: 'Interview five working parents',
       description:
-        'As a home cook, I want to search the Tabasco catalog by heat level and flavor profile so that I can choose the right sauce for my meal.',
+        'Ask whether they would book a stranger from a local pool for childcare or pet care on short notice.',
+      milestone_category: 'Validation',
+      status: 'To Test',
     },
     {
-      title: 'Log and rate tasted sauces',
+      title: 'Recruit providers in one neighborhood',
       description:
-        'As a spice enthusiast, I want to log the sauces I have tried and rate them so that I can track my personal heat tolerance over time.',
+        'See if students, retirees, and gig workers will join a curated pool for casual local jobs.',
+      milestone_category: 'Marketing',
+      status: 'To Test',
     },
     {
-      title: 'Pairing quiz for the current meal',
+      title: 'Manually match ten job requests',
       description:
-        'As a foodie, I want to take a quick pairing quiz based on what I am cooking so that I can get instant sauce recommendations.',
+        'Post real requests across handyman, pet walking, nannying, and lawn care and record whether someone accepts within 48 hours.',
+      milestone_category: 'Execution',
+      status: 'Building',
     },
     {
-      title: 'Browse recipes by Tabasco variety',
+      title: 'Check repeat bookings after the first match',
       description:
-        'As a brand fan, I want to browse recipes filtered by specific Tabasco varieties so that I can cook flavorful, spicy meals at home.',
+        'Ask households who already found help whether they would book again on the platform instead of going off-platform.',
+      milestone_category: 'Operations',
+      status: 'Validated',
     },
   ],
 }

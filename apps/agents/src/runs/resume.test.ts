@@ -79,10 +79,23 @@ function kanbanModel() {
               id: 'call-1',
               name: 'render_kanban',
               args: {
-                stories: [
-                  { title: 'Book a walk' },
-                  { title: 'Pay online' },
-                  { title: 'Leave a review' },
+                columns: ['To Test', 'Building', 'Validated'],
+                cards: [
+                  {
+                    title: 'Book a walk',
+                    milestone_category: 'Validation',
+                    status: 'To Test',
+                  },
+                  {
+                    title: 'Pay online',
+                    milestone_category: 'Execution',
+                    status: 'Building',
+                  },
+                  {
+                    title: 'Leave a review',
+                    milestone_category: 'Marketing',
+                    status: 'Validated',
+                  },
                 ],
               },
               type: 'tool_call',

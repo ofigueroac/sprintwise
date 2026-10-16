@@ -11,9 +11,10 @@ export type SaveKanbanStories = (
   args: RenderKanbanArgs
 ) => Promise<void>
 
-const descriptionString = `Put 3 to 5 candidate user stories on
-the Kanban board. Call this once after the written analysis,
-never instead of the analysis.`
+const descriptionString = `Put 3 to 5 validation milestones on the board.
+columns must be To Test, Building, and Validated.
+Each card needs title, description, milestone_category, and status.
+Call this once after the written analysis, never instead of it.`
 
 export function createRenderKanbanTool(saveStories: SaveKanbanStories) {
   return tool(
@@ -25,7 +26,7 @@ export function createRenderKanbanTool(saveStories: SaveKanbanStories) {
       }
 
       await saveStories(projectId, args)
-      return `Saved ${args.stories.length} stories to the board`
+      return `Saved ${args.cards.length} milestones to the board`
     },
     {
       name: RENDER_KANBAN_TOOL,
