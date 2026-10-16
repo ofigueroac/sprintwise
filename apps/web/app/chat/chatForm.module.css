@@ -12,10 +12,6 @@
   @apply cursor-pointer text-sm font-medium;
 }
 
-.userBubble {
-  @apply bg-muted ml-auto max-w-[85%] rounded-lg px-3 py-2;
-}
-
 .assistantBubble {
   @apply max-w-[85%] rounded-lg px-3 py-2;
 }

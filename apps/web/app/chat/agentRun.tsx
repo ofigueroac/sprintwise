@@ -4,9 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
-  useOptimistic,
   useState,
-  useTransition,
   type KeyboardEvent,
   type ReactNode,
   type SubmitEvent,
@@ -54,7 +52,6 @@ export type AgentRunContextValue = {
   busy: boolean
   awaitingApproval: boolean
   boardReady: boolean
-  optimisticIdea: string | null
   onSubmit: (event: SubmitEvent<HTMLFormElement>) => void
   onIdeaKeyDown: (event: KeyboardEvent<HTMLTextAreaElement>) => void
   onApprove: () => void
@@ -77,8 +74,6 @@ function AgentRunRoot({ children }: { children: ReactNode }) {
   const [pending, setPending] = useState(false)
   const [projectId, setProjectId] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
-  const [, startTransition] = useTransition()
-  const [optimisticIdea, addOptimisticIdea] = useOptimistic<string | null>(null)
   const { status, messages, tools, error, runId, start, resume, restore } =
     useAgentRun()
 
@@ -118,9 +113,6 @@ function AgentRunRoot({ children }: { children: ReactNode }) {
 
     setActionError(null)
     setPending(true)
-    startTransition(() => {
-      addOptimisticIdea(trimmedIdea)
-    })
 
     try {
       const result = await createRunToken(trimmedIdea)
@@ -204,7 +196,6 @@ function AgentRunRoot({ children }: { children: ReactNode }) {
     busy,
     awaitingApproval,
     boardReady,
-    optimisticIdea,
     onSubmit,
     onIdeaKeyDown,
     onApprove: () => {
@@ -274,19 +265,12 @@ function Composer() {
 }
 
 function Messages() {
-  const { busy, messages, optimisticIdea, idea, awaitingApproval } =
-    useAgentRunContext()
-  const userText = optimisticIdea ?? (awaitingApproval ? idea : null)
+  const { busy, messages } = useAgentRunContext()
   let body: ReactNode = 'The reply will stream here.'
 
-  if (messages.length > 0 || userText) {
+  if (messages.length > 0) {
     body = (
       <>
-        {userText ? (
-          <MessageError resetKeys={[userText]}>
-            <p className={styles.userBubble}>{userText}</p>
-          </MessageError>
-        ) : null}
         {messages.map((message) => (
           <MessageError key={message.id} resetKeys={[message.id]}>
             <p className={styles.assistantBubble}>{message.content}</p>
