@@ -4,8 +4,20 @@
   @apply grid grid-cols-1 items-start gap-6 md:grid-cols-2;
 }
 
+.transcript {
+  @apply min-h-0;
+}
+
 .transcriptSummary {
   @apply cursor-pointer text-sm font-medium md:hidden;
+}
+
+.userBubble {
+  @apply bg-muted ml-auto max-w-[85%] rounded-lg px-3 py-2;
+}
+
+.assistantBubble {
+  @apply max-w-[85%] rounded-lg px-3 py-2;
 }
 
 .chat {

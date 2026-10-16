@@ -37,34 +37,26 @@ export function ChatTranscript({
   children,
 }: ChatTranscriptProps) {
   const wide = useWideLayout()
-  const [expanded, setExpanded] = useState(true)
+  const [userOpen, setUserOpen] = useState(false)
+  const [seenBoardReady, setSeenBoardReady] = useState(boardReady)
 
-  useEffect(() => {
-    // While tokens stream keep the reply open. After the board lands collapse it on small screens
-    if (busy) {
-      setExpanded(true)
-      return
-    }
+  if (boardReady !== seenBoardReady) {
+    setSeenBoardReady(boardReady)
+    setUserOpen(false)
+  }
 
-    if (boardReady) {
-      setExpanded(false)
-    }
-  }, [busy, boardReady])
+  const open = wide || busy || !boardReady || userOpen
 
   function onToggle(event: ToggleEvent<HTMLDetailsElement>) {
-    if (wide) {
+    if (wide || busy || !boardReady) {
       return
     }
 
-    setExpanded(event.currentTarget.open)
+    setUserOpen(event.currentTarget.open)
   }
 
   return (
-    <details
-      className={styles.transcript}
-      open={wide || expanded}
-      onToggle={onToggle}
-    >
+    <details className={styles.transcript} open={open} onToggle={onToggle}>
       <summary className={styles.transcriptSummary}>
         {busy ? 'Analyst is writing' : 'Analyst reply'}
       </summary>
