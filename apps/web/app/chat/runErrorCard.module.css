@@ -1,0 +1,17 @@
+@reference '@repo/ui/globals.css';
+
+.alert {
+  @apply grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1;
+}
+
+.title {
+  @apply col-start-1 row-start-1 min-w-0;
+}
+
+.description {
+  @apply col-start-1 row-start-2;
+}
+
+.action {
+  @apply col-start-2 row-start-1;
+}

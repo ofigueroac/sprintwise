@@ -1,6 +1,6 @@
 'use client'
 
-import { Alert, AlertAction, AlertTitle, Button } from '@repo/ui/components'
+import { Alert, AlertTitle, Button } from '@repo/ui/components'
 
 export default function ChatError({
   reset,
@@ -9,13 +9,11 @@ export default function ChatError({
   reset: () => void
 }) {
   return (
-    <Alert variant="destructive">
+    <Alert variant="destructive" className="gap-3">
       <AlertTitle>The chat page failed to load.</AlertTitle>
-      <AlertAction>
-        <Button type="button" onClick={reset}>
-          Try again
-        </Button>
-      </AlertAction>
+      <Button type="button" onClick={reset}>
+        Try again
+      </Button>
     </Alert>
   )
 }
