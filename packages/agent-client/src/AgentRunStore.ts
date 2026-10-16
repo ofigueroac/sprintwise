@@ -1,9 +1,12 @@
 import { createStore } from 'zustand/vanilla'
 
+import { RENDER_KANBAN_TOOL } from '@repo/schemas'
+
 import {
   AGENT_STATUS,
   initialAgentRunState,
   reduceAgUiEvent,
+  type AgentMessage,
   type AgentRunState,
 } from './reducer'
 import { streamAgentRun } from './stream'
@@ -20,10 +23,17 @@ export type ResumeAgentRunInput = {
   approved: boolean
 }
 
+export type RestoreAgentRunInput = {
+  threadId: string
+  runId: string
+  messages: AgentMessage[]
+}
+
 // UI state plus the actions the screen will call
 export type AgentRunStoreState = AgentRunState & {
   start: (input: StartAgentRunInput) => Promise<void>
   resume: (input: ResumeAgentRunInput) => Promise<void>
+  restore: (input: RestoreAgentRunInput) => void
   abort: () => void
 }
 
@@ -106,6 +116,29 @@ export function createAgentRunStore() {
           { approved: input.approved },
           false
         )
+      },
+
+      restore(input) {
+        // A new Ask already started so do not overwrite the live stream
+        if (get().status !== AGENT_STATUS.IDDLE) {
+          return
+        }
+
+        set({
+          ...initialAgentRunState,
+          status: AGENT_STATUS.AWAITING_APPROVAL,
+          threadId: input.threadId,
+          runId: input.runId,
+          messages: input.messages,
+          tools: [
+            {
+              id: 'restored-kanban',
+              name: RENDER_KANBAN_TOOL,
+              argsText: '{}',
+              done: true,
+            },
+          ],
+        })
       },
 
       abort() {

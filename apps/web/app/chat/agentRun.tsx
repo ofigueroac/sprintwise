@@ -3,6 +3,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useOptimistic,
   useState,
   useTransition,
@@ -32,7 +33,7 @@ import { ApprovalCard } from './approvalCard'
 import { ChatBoard } from './chatBoard'
 import { ChatTranscript } from './chatTranscript'
 import { MessageError } from './messageError'
-import { createResumeToken } from './resumeActions'
+import { createResumeToken, loadAwaitingRun } from './resumeActions'
 import { RunErrorCard } from './runErrorCard'
 import styles from './chatForm.module.css'
 
@@ -78,7 +79,8 @@ function AgentRunRoot({ children }: { children: ReactNode }) {
   const [actionError, setActionError] = useState<string | null>(null)
   const [, startTransition] = useTransition()
   const [optimisticIdea, addOptimisticIdea] = useOptimistic<string | null>(null)
-  const { status, messages, tools, error, runId, start, resume } = useAgentRun()
+  const { status, messages, tools, error, runId, start, resume, restore } =
+    useAgentRun()
 
   const trimmedIdea = idea.trim()
   const busy = pending || status === AGENT_STATUS.RUNNING
@@ -86,6 +88,28 @@ function AgentRunRoot({ children }: { children: ReactNode }) {
   const boardReady = tools.some(
     (tool) => tool.name === RENDER_KANBAN_TOOL && tool.done
   )
+
+  useEffect(() => {
+    let cancelled = false
+
+    void loadAwaitingRun().then((result) => {
+      if (cancelled || !result.projectId || !result.runId || !result.idea) {
+        return
+      }
+
+      setProjectId(result.projectId)
+      setIdea(result.idea)
+      restore({
+        threadId: result.projectId,
+        runId: result.runId,
+        messages: result.messages ?? [],
+      })
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [restore])
 
   async function startIdea() {
     if (busy || trimmedIdea.length === 0) {
@@ -250,15 +274,17 @@ function Composer() {
 }
 
 function Messages() {
-  const { busy, messages, optimisticIdea } = useAgentRunContext()
+  const { busy, messages, optimisticIdea, idea, awaitingApproval } =
+    useAgentRunContext()
+  const userText = optimisticIdea ?? (awaitingApproval ? idea : null)
   let body: ReactNode = 'The reply will stream here.'
 
-  if (messages.length > 0 || optimisticIdea) {
+  if (messages.length > 0 || userText) {
     body = (
       <>
-        {optimisticIdea ? (
-          <MessageError resetKeys={[optimisticIdea]}>
-            <p className={styles.userBubble}>{optimisticIdea}</p>
+        {userText ? (
+          <MessageError resetKeys={[userText]}>
+            <p className={styles.userBubble}>{userText}</p>
           </MessageError>
         ) : null}
         {messages.map((message) => (

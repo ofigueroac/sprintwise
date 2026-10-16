@@ -1,7 +1,7 @@
 @reference '@repo/ui/globals.css';
 
 .layout {
-  @apply grid grid-cols-1 items-start gap-6 md:grid-cols-2;
+  @apply grid grid-cols-1 items-start gap-6 xl:grid-cols-2;
 }
 
 .transcript {
@@ -9,7 +9,7 @@
 }
 
 .transcriptSummary {
-  @apply cursor-pointer text-sm font-medium md:hidden;
+  @apply cursor-pointer text-sm font-medium;
 }
 
 .userBubble {

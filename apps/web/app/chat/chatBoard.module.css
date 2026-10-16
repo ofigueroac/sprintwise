@@ -1,7 +1,7 @@
 @reference '@repo/ui/globals.css';
 
 .skeleton {
-  @apply grid gap-3 md:grid-cols-3;
+  @apply grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3;
 }
 
 .column {

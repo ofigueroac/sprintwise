@@ -1,13 +1,19 @@
 'use client'
 
-import { useEffect, useState, type ReactNode, type ToggleEvent } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
+
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@repo/ui/components'
 
 import styles from './chatForm.module.css'
 
 const WIDE_QUERY = '(min-width: 768px)'
 
 function useWideLayout() {
-  const [wide, setWide] = useState(false)
+  const [wide, setWide] = useState(true)
 
   useEffect(() => {
     const media = window.matchMedia(WIDE_QUERY)
@@ -45,22 +51,29 @@ export function ChatTranscript({
     setUserOpen(false)
   }
 
-  const open = wide || busy || !boardReady || userOpen
-
-  function onToggle(event: ToggleEvent<HTMLDetailsElement>) {
-    if (wide || busy || !boardReady) {
-      return
-    }
-
-    setUserOpen(event.currentTarget.open)
+  if (wide) {
+    return children
   }
 
+  const lockedOpen = busy || !boardReady
+  const open = lockedOpen || userOpen
+
   return (
-    <details className={styles.transcript} open={open} onToggle={onToggle}>
-      <summary className={styles.transcriptSummary}>
+    <Collapsible
+      className={styles.transcript}
+      open={open}
+      onOpenChange={(next) => {
+        if (lockedOpen) {
+          return
+        }
+
+        setUserOpen(next)
+      }}
+    >
+      <CollapsibleTrigger className={styles.transcriptSummary}>
         {busy ? 'Analyst is writing' : 'Analyst reply'}
-      </summary>
-      {children}
-    </details>
+      </CollapsibleTrigger>
+      <CollapsibleContent>{children}</CollapsibleContent>
+    </Collapsible>
   )
 }

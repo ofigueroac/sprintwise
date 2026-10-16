@@ -1,5 +1,0 @@
-@reference '@repo/ui/globals.css';
-
-.panel {
-  @apply border-border flex flex-col items-start gap-3 rounded-lg border px-4 py-3;
-}

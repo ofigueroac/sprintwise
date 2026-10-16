@@ -13,5 +13,6 @@ export {
   type AgentRunStoreState,
   type StartAgentRunInput,
   type ResumeAgentRunInput,
+  type RestoreAgentRunInput,
 } from './AgentRunStore'
 export { useAgentRun } from './agentRun'

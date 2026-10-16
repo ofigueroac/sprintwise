@@ -16,7 +16,7 @@ export function useAgentRun() {
   }, [store])
 
   const state = useStore(store)
-  const { start, resume, abort, ...run } = state
+  const { start, resume, restore, abort, ...run } = state
 
-  return { ...run, start, resume, abort }
+  return { ...run, start, resume, restore, abort }
 }

@@ -103,6 +103,7 @@ export function ChatBoard({
           }
         >
           <KanbanBoard
+            key={projectId}
             stories={boardStories}
             onMove={disabled ? undefined : onMove}
             disabled={disabled}

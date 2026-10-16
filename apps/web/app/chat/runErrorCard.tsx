@@ -1,8 +1,12 @@
 'use client'
 
-import { Button } from '@repo/ui/components'
-
-import styles from './runErrorCard.module.css'
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+  Button,
+} from '@repo/ui/components'
 
 export type RunErrorCardProps = {
   message: string
@@ -18,14 +22,14 @@ export function RunErrorCard({
   pending = false,
 }: RunErrorCardProps) {
   return (
-    <div className={styles.card} role="alert">
-      <p className={styles.copy}>{message}</p>
-      {code ? <p className="text-xs text-muted-foreground">{code}</p> : null}
-      <div className={styles.actions}>
+    <Alert variant="destructive">
+      <AlertTitle>{message}</AlertTitle>
+      {code ? <AlertDescription>{code}</AlertDescription> : null}
+      <AlertAction>
         <Button type="button" onClick={onRetry} loading={pending}>
           Retry
         </Button>
-      </div>
-    </div>
+      </AlertAction>
+    </Alert>
   )
 }

@@ -1,8 +1,8 @@
 'use server'
 
-import { eq } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 
-import { projects, runs } from '@repo/db/schema'
+import { messages, projects, runs } from '@repo/db/schema'
 import { ResumeRunIdsSchema } from '@repo/schemas'
 
 import { getCurrentUser } from '@/auth'
@@ -62,4 +62,51 @@ export async function createResumeToken(projectId: string, runId: string) {
   )
 
   return { token, projectId: project.id, runId: run.id }
+}
+
+// Reload the paused run after a refresh so the dialog and board come back
+export async function loadAwaitingRun() {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    return { error: 'sign in to resume a run' }
+  }
+
+  const [paused] = await getDb()
+    .select({
+      runId: runs.id,
+      projectId: projects.id,
+      idea: projects.idea,
+    })
+    .from(runs)
+    .innerJoin(projects, eq(runs.projectId, projects.id))
+    .where(
+      and(eq(projects.userId, user.id), eq(runs.status, 'awaiting_approval'))
+    )
+    .orderBy(desc(runs.updatedAt))
+    .limit(1)
+
+  if (!paused) {
+    return {}
+  }
+
+  const rows = await getDb()
+    .select()
+    .from(messages)
+    .where(eq(messages.runId, paused.runId))
+    .orderBy(messages.createdAt)
+
+  return {
+    projectId: paused.projectId,
+    runId: paused.runId,
+    idea: paused.idea,
+    messages: rows
+      .filter((row) => row.role === 'assistant')
+      .map((row) => ({
+        id: row.id,
+        role: 'assistant' as const,
+        content: row.content,
+        done: true,
+      })),
+  }
 }

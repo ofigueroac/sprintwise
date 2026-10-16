@@ -1,8 +1,6 @@
 'use client'
 
-import { Button } from '@repo/ui/components'
-
-import styles from './error.module.css'
+import { Alert, AlertAction, AlertTitle, Button } from '@repo/ui/components'
 
 export default function ChatError({
   reset,
@@ -11,11 +9,13 @@ export default function ChatError({
   reset: () => void
 }) {
   return (
-    <div className={styles.panel} role="alert">
-      <p>The chat page failed to load.</p>
-      <Button type="button" onClick={reset}>
-        Try again
-      </Button>
-    </div>
+    <Alert variant="destructive">
+      <AlertTitle>The chat page failed to load.</AlertTitle>
+      <AlertAction>
+        <Button type="button" onClick={reset}>
+          Try again
+        </Button>
+      </AlertAction>
+    </Alert>
   )
 }

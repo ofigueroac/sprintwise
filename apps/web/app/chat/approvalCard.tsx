@@ -1,8 +1,15 @@
 'use client'
 
-import { Button } from '@repo/ui/components'
-
-import styles from './approvalCard.module.css'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Button,
+} from '@repo/ui/components'
 
 export type ApprovalCardProps = {
   onApprove: () => void
@@ -16,28 +23,36 @@ export function ApprovalCard({
   pending = false,
 }: ApprovalCardProps) {
   return (
-    <div
-      className={styles.card}
-      role="group"
-      aria-label="Scope approval"
-      aria-busy={pending || undefined}
+    <AlertDialog
+      open
+      onOpenChange={(open) => {
+        // Stay open until Approve or Reject finishes the run
+        if (!open) {
+          return
+        }
+      }}
     >
-      <p className={styles.copy}>
-        Approve this Kanban to finish the run, or reject it.
-      </p>
-      <div className={styles.actions}>
-        <Button type="button" onClick={onApprove} disabled={pending}>
-          Approve
-        </Button>
-        <Button
-          type="button"
-          variant="destructive"
-          onClick={onReject}
-          disabled={pending}
-        >
-          Reject
-        </Button>
-      </div>
-    </div>
+      <AlertDialogContent aria-busy={pending || undefined}>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Approve this scope</AlertDialogTitle>
+          <AlertDialogDescription>
+            Approve this Kanban to finish the run, or reject it.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogAction onClick={onApprove} disabled={pending}>
+            Approve
+          </AlertDialogAction>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={onReject}
+            disabled={pending}
+          >
+            Reject
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
