@@ -21,8 +21,8 @@ export default async function HomePage({
       <main className={styles.main}>
         <h1 className={styles.title}>Sprintwise</h1>
         <p className={styles.lead}>
-          Describe a product idea and watch an AI team turn it into user
-          stories, a Kanban board and a plan you can approve.
+          Kick off a product idea. The Analyst writes a discovery brief and a
+          proposed v1 you can approve and take with you.
         </p>
 
         {user ? (

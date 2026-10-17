@@ -27,7 +27,9 @@ import {
 } from '@repo/ui/components'
 
 import { createRunToken } from './actions'
+import { listProjectStories } from './boardActions'
 import { ApprovalCard } from './approvalCard'
+import { downloadMilestonePack, mvpStories } from './milestonePack'
 import { ChatBoard } from './chatBoard'
 import { ChatTranscript } from './chatTranscript'
 import { MessageError } from './messageError'
@@ -172,11 +174,26 @@ function AgentRunRoot({ children }: { children: ReactNode }) {
         return
       }
 
-      await resume({
+      const stories = approved ? await listProjectStories(projectId) : null
+      const mvp =
+        stories && 'stories' in stories && stories.stories
+          ? mvpStories(stories.stories)
+          : []
+
+      if (approved && mvp.length === 0) {
+        setActionError('Move at least one story into MVP before you approve')
+        return
+      }
+
+      const ended = await resume({
         url: `${AGENTS_URL}/runs/${result.runId}/resume`,
         token: result.token,
         approved,
       })
+
+      if (approved && ended.status === AGENT_STATUS.FINISHED) {
+        downloadMilestonePack(mvp)
+      }
     } finally {
       setPending(false)
     }
@@ -242,7 +259,7 @@ function Composer() {
             required
           />
           <FieldDescription>
-            Press Enter to ask the Analyst. Shift+Enter adds a new line.
+            Press Enter to kick off. Shift+Enter adds a new line.
           </FieldDescription>
         </Field>
         <Button
@@ -251,7 +268,7 @@ function Composer() {
           loading={busy}
           disabled={idea.trim().length === 0 || awaitingApproval}
         >
-          Ask the Analyst
+          Kick off
         </Button>
       </form>
 

@@ -4,11 +4,7 @@ import { useEffect, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import { AGENT_STATUS, type AgentToolCall } from '@repo/agent-client'
-import {
-  RENDER_KANBAN_TOOL,
-  RenderKanbanArgsSchema,
-  type Story,
-} from '@repo/schemas'
+import { RENDER_KANBAN_TOOL, type Story } from '@repo/schemas'
 import { KanbanBoard, Skeleton, type KanbanMove } from '@repo/ui/components'
 
 import { listProjectStories, moveProjectStory } from './boardActions'
@@ -30,27 +26,6 @@ export function ChatBoard({
   const [stories, setStories] = useState<Story[]>([])
   const [error, setError] = useState<string | null>(null)
   const tool = tools.find((call) => call.name === RENDER_KANBAN_TOOL)
-
-  useEffect(() => {
-    if (!tool?.done || tool.argsText.length === 0) {
-      return
-    }
-
-    let payload: unknown
-    try {
-      payload = JSON.parse(tool.argsText)
-    } catch {
-      return
-    }
-
-    const parsed = RenderKanbanArgsSchema.safeParse(payload)
-    if (!parsed.success) {
-      console.log('render_kanban payload', payload)
-      return
-    }
-
-    console.log('render_kanban payload', parsed.data)
-  }, [tool?.done, tool?.argsText])
   // A new run wipes tools so hide the last board until stories load again
   const boardStories = tool?.done ? stories : []
   const boardError = tool?.done ? error : null

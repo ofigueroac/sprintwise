@@ -23,11 +23,12 @@ export function ApprovalCard({
       aria-busy={pending || undefined}
     >
       <p className={styles.copy}>
-        Approve this Kanban to finish the run, or reject it.
+        Move the stories you want into MVP, then approve. Only those stories are
+        downloaded. Brainstorm and Icebox stay in the project.
       </p>
       <div className={styles.actions}>
         <Button type="button" onClick={onApprove} loading={pending}>
-          Approve
+          Approve MVP
         </Button>
         <Button
           type="button"
