@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { eq } from 'drizzle-orm'
 import type { Database } from '@repo/db'
 import { messages, projects, runs, stories, users } from '@repo/db/schema'
-import { storyStatusForMilestone, type RenderKanbanArgs } from '@repo/schemas'
+import type { RenderKanbanArgs } from '@repo/schemas'
 
 type UserTurn = {
   userId: string
@@ -92,7 +92,7 @@ export function createRunStore(db: Database) {
           title: card.title,
           description: card.description,
           acceptanceCriteria: [],
-          status: storyStatusForMilestone(card.status),
+          status: 'brainstorm' as const,
           priority: 'medium' as const,
           position: index,
         }))

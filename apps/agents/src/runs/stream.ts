@@ -60,6 +60,30 @@ function asMessageChunk(chunk: unknown): LangGraphStreamChunk | null {
   return payload as LangGraphStreamChunk
 }
 
+function analystMessage(chunk: unknown): object | null {
+  if (!Array.isArray(chunk) || chunk[0] !== 'updates') {
+    return null
+  }
+
+  const update = chunk[1]
+  if (!update || typeof update !== 'object' || !('analyst' in update)) {
+    return null
+  }
+
+  const analyst = update.analyst
+  if (!analyst || typeof analyst !== 'object' || !('messages' in analyst)) {
+    return null
+  }
+
+  const { messages } = analyst
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return null
+  }
+
+  const message = messages.at(-1)
+  return message && typeof message === 'object' ? message : null
+}
+
 function hasInterrupt(chunk: unknown) {
   if (!Array.isArray(chunk) || chunk.length === 0) {
     return false
@@ -151,11 +175,16 @@ export function streamRun(c: RunContext, runtime: AgentRuntime) {
             }
 
             const messageChunk = asMessageChunk(chunk)
-            if (!messageChunk) {
+            const finished = analystMessage(chunk)
+            const events = messageChunk
+              ? mapper.onChunk(messageChunk)
+              : finished
+                ? mapper.tools(finished)
+                : []
+
+            if (events.length === 0) {
               continue
             }
-
-            const events = mapper.onChunk(messageChunk)
 
             for (const event of events) {
               // Remember the words so we can save the full reply at the end.

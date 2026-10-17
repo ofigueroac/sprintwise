@@ -31,8 +31,8 @@ export type RestoreAgentRunInput = {
 
 // UI state plus the actions the screen will call
 export type AgentRunStoreState = AgentRunState & {
-  start: (input: StartAgentRunInput) => Promise<void>
-  resume: (input: ResumeAgentRunInput) => Promise<void>
+  start: (input: StartAgentRunInput) => Promise<AgentRunState>
+  resume: (input: ResumeAgentRunInput) => Promise<AgentRunState>
   restore: (input: RestoreAgentRunInput) => void
   abort: () => void
 }
@@ -48,7 +48,7 @@ export function createAgentRunStore() {
       token: string,
       body: unknown,
       reset: boolean
-    ) {
+    ): Promise<AgentRunState> {
       controller?.abort()
       controller = new AbortController()
       const signal = controller.signal
@@ -90,7 +90,7 @@ export function createAgentRunStore() {
       } catch (error) {
         // User hit abort so leave the last tokens on screen
         if (signal.aborted) {
-          return
+          return get()
         }
 
         set({
@@ -100,17 +100,19 @@ export function createAgentRunStore() {
           },
         })
       }
+
+      return get()
     }
 
     return {
       ...initialAgentRunState,
 
       async start(input) {
-        await runStream(input.url, input.token, { idea: input.idea }, true)
+        return runStream(input.url, input.token, { idea: input.idea }, true)
       },
 
       async resume(input) {
-        await runStream(
+        return runStream(
           input.url,
           input.token,
           { approved: input.approved },

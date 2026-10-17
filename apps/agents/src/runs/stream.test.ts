@@ -1,4 +1,4 @@
-import { AIMessage } from '@langchain/core/messages'
+import { AIMessage, AIMessageChunk } from '@langchain/core/messages'
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { FakeListChatModel } from '@langchain/core/utils/testing'
 import { MemorySaver } from '@langchain/langgraph'
@@ -165,23 +165,10 @@ describe('POST /runs', () => {
                 id: 'call-1',
                 name: 'render_kanban',
                 args: {
-                  columns: ['To Test', 'Building', 'Validated'],
                   cards: [
-                    {
-                      title: 'Book a walk',
-                      milestone_category: 'Validation',
-                      status: 'To Test',
-                    },
-                    {
-                      title: 'Pay online',
-                      milestone_category: 'Execution',
-                      status: 'Building',
-                    },
-                    {
-                      title: 'Leave a review',
-                      milestone_category: 'Marketing',
-                      status: 'Validated',
-                    },
+                    { title: 'Book a walk' },
+                    { title: 'Pay online' },
+                    { title: 'Leave a review' },
                   ],
                 },
                 type: 'tool_call',
@@ -217,5 +204,58 @@ describe('POST /runs', () => {
     expect(types).toContain('TOOL_CALL_END')
     expect(types).not.toContain('RUN_FINISHED')
     expect(markAwaitingApproval).toHaveBeenCalledWith(ids.runId)
+  })
+
+  it('emits the Kanban tool from the node update when stream chunks omit it', async () => {
+    const env = testEnv()
+    const cards = [
+      { title: 'Book a walk' },
+      { title: 'Pay online' },
+      { title: 'Leave a review' },
+    ]
+    const model = {
+      bindTools() {
+        return this
+      },
+      async stream() {
+        return (async function* () {
+          yield new AIMessageChunk({ content: 'Here is the analysis.' })
+          yield new AIMessageChunk({
+            content: '',
+            tool_call_chunks: [
+              {
+                name: 'render_kanban',
+                args: JSON.stringify({ cards }),
+                id: 'call-1',
+                index: 0,
+                type: 'tool_call_chunk',
+              },
+            ],
+          })
+        })()
+      },
+    } as unknown as BaseChatModel
+
+    const app = createApp(env, {
+      graph: createAnalystGraph(
+        model,
+        new MemorySaver(),
+        async () => undefined
+      ),
+      runs: memoryRuns(),
+    })
+
+    const res = await app.request('/runs', {
+      method: 'POST',
+      headers: {
+        Authorization: await bearer(env.AGENT_JWT_SECRET),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ idea: 'A dog walking app' }),
+    })
+
+    const types = eventsFromSse(await res.text()).map((event) => event.type)
+    expect(types).toContain('TOOL_CALL_END')
+    expect(types).not.toContain('RUN_FINISHED')
   })
 })

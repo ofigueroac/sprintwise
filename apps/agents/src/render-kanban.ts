@@ -11,9 +11,9 @@ export type SaveKanbanStories = (
   args: RenderKanbanArgs
 ) => Promise<void>
 
-const descriptionString = `Put 3 to 5 validation milestones on the board.
-columns must be To Test, Building, and Validated.
-Each card needs title, description, milestone_category, and status.
+const descriptionString = `Put 3 to 5 user stories on the brainstorm column.
+Each card needs title and description.
+Do not choose MVP or Icebox.
 Call this once after the written analysis, never instead of it.`
 
 export function createRenderKanbanTool(saveStories: SaveKanbanStories) {

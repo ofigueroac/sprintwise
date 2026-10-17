@@ -7,23 +7,10 @@ import { createAnalystGraph } from './analyst'
 
 const threadId = '11111111-1111-4111-8111-111111111111'
 const stories = {
-  columns: ['To Test', 'Building', 'Validated'],
   cards: [
-    {
-      title: 'Book a walk',
-      milestone_category: 'Validation',
-      status: 'To Test',
-    },
-    {
-      title: 'Pay online',
-      milestone_category: 'Execution',
-      status: 'Building',
-    },
-    {
-      title: 'Leave a review',
-      milestone_category: 'Marketing',
-      status: 'Validated',
-    },
+    { title: 'Book a walk', description: 'As a owner I want to book a walk.' },
+    { title: 'Pay online' },
+    { title: 'Leave a review' },
   ],
 }
 

@@ -102,8 +102,17 @@ export function createLangGraphAgUiMapper({
         })
       }
 
+      events.push(...this.tools(message))
+      return events
+    },
+
+    // Stream chunks often omit a finished tool call. The node update has it.
+    tools(message: object): AgUiEvent[] {
+      const events: AgUiEvent[] = []
+
       for (const call of toolCalls(message)) {
-        if (!call.id || !call.name || emittedToolCalls.has(call.id)) {
+        const id = call.id || call.name
+        if (!id || !call.name || emittedToolCalls.has(id)) {
           continue
         }
 
@@ -112,21 +121,21 @@ export function createLangGraphAgUiMapper({
           continue
         }
 
-        emittedToolCalls.add(call.id)
+        emittedToolCalls.add(id)
         events.push(
           {
             type: EventType.TOOL_CALL_START,
-            toolCallId: call.id,
+            toolCallId: id,
             toolCallName: call.name,
           },
           {
             type: EventType.TOOL_CALL_ARGS,
-            toolCallId: call.id,
+            toolCallId: id,
             delta: argsJson,
           },
           {
             type: EventType.TOOL_CALL_END,
-            toolCallId: call.id,
+            toolCallId: id,
           }
         )
       }

@@ -4,52 +4,51 @@ import type { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { RENDER_KANBAN_TOOL } from '@repo/schemas'
 
 const FAKE_REPLY = `## Target Audience
-- **Busy Working Parents:** Households with young children needing ad-hoc, trusted local help for childcare, pet walking, or light chores on short notice.
-- **Independent Local Service Providers:** Reliable individuals (students, retirees, gig workers) looking to fill schedule gaps with local, flexible casual gigs without platform fees eating their margins.
+- **Field Recordists & Foley Artists:** Audio professionals, hobbyists, and acoustic ecologists capturing environmental sound, wildlife, transit noises, or urban ambiances directly on location using mobile devices or dedicated field gear.
+- **Music Producers & Beatmakers:** Artists seeking rare, geographically distinct textures, found sounds, and acoustic spaces to sample and manipulate within their musical productions.
 
 ## Core Problem
-Homeowners and parents struggle to find reliable, vetted help for ad-hoc neighborhood tasks (babysitting, lawn mowing, minor repairs) without paying excessive agency fees or wading through spammy classifieds. Existing platforms either specialize in only one category or cater to large corporate jobs, making small, casual local gigs inefficient to book and coordinate.
+Field recordings and acoustic samples are currently marooned across fragmented audio platforms like Freesound, generic cloud drives, or private hard drives. These existing platforms strip sounds of their physical, geographical, and environmental context. Creators looking for particular regional ambiances (e.g., a specific train station's reverb or a coastal canyon's wind patterns) have no intuitive, map-driven way to discover, share, or collaboratively build upon audio tied to real-world locations.
 
-## Riskiest Assumptions
-- **Trust Assumption:** Users will trust strangers from a platform inside their homes for personal services like nannying or pet care without rigorous, enterprise-grade background checks.
-- **Frequency Assumption:** The demand for casual services is frequent enough to keep providers engaged, rather than users just finding one provider and taking them off-platform immediately.
-- **Supply Density Assumption:** We can acquire enough multi-talented local providers in a tight geographic radius to fulfill requests within 24–48 hours.
-- **Economics Assumption:** A transaction or subscription model can sustain operations while remaining cheaper than existing local word-of-mouth networks.
-
-## Proposed v1
-- **In scope:** A lightweight web or mobile interface allowing users to post a single job request across multiple categories (Handyman, Pet Walker, Nanny, Lawn Care) to a curated local pool of providers, with basic in-app messaging and manual matching.
-- **Later:** Automated algorithmic dispatch, background check integrations, and in-app escrow payment processing.`
+## Proposed stories
+- As a field recordist, I want to upload an audio recording tagged with its exact GPS coordinates so that others can experience the authentic acoustic environment of that specific location.
+- As a music producer, I want to explore an interactive map populated with audio pins so that I can discover geographically unique sound samples from around the world.
+- As a sound designer, I want to layer my own audio onto an existing location pin so that I can co-create evolving soundscapes with other artists.
+- As a mobile recordist, I want to capture audio directly within the mobile interface using my device microphone so that I can document spontaneous acoustic moments without external hardware.
+- As a sample seeker, I want to filter the map by sound category (e.g., weather, mechanical, nature, acoustic space) so that I can find suitable source material for my compositions quickly.
+- As a creator, I want to specify usage rights and Creative Commons licenses for my uploaded recordings so that collaborators know how they can legally incorporate my sounds into their work.`
 
 const FAKE_STORIES = {
-  columns: ['To Test', 'Building', 'Validated'],
   cards: [
     {
-      title: 'Interview five working parents',
+      title: 'Upload a GPS-tagged recording',
       description:
-        'Ask whether they would book a stranger from a local pool for childcare or pet care on short notice.',
-      milestone_category: 'Validation',
-      status: 'To Test',
+        'As a field recordist, I want to upload an audio recording tagged with its exact GPS coordinates so that others can experience the authentic acoustic environment of that specific location.',
     },
     {
-      title: 'Recruit providers in one neighborhood',
+      title: 'Explore audio pins on a map',
       description:
-        'See if students, retirees, and gig workers will join a curated pool for casual local jobs.',
-      milestone_category: 'Marketing',
-      status: 'To Test',
+        'As a music producer, I want to explore an interactive map populated with audio pins so that I can discover geographically unique sound samples from around the world.',
     },
     {
-      title: 'Manually match ten job requests',
+      title: 'Layer audio on a location pin',
       description:
-        'Post real requests across handyman, pet walking, nannying, and lawn care and record whether someone accepts within 48 hours.',
-      milestone_category: 'Execution',
-      status: 'Building',
+        'As a sound designer, I want to layer my own audio onto an existing location pin so that I can co-create evolving soundscapes with other artists.',
     },
     {
-      title: 'Check repeat bookings after the first match',
+      title: 'Capture audio in the mobile app',
       description:
-        'Ask households who already found help whether they would book again on the platform instead of going off-platform.',
-      milestone_category: 'Operations',
-      status: 'Validated',
+        'As a mobile recordist, I want to capture audio directly within the mobile interface using my device microphone so that I can document spontaneous acoustic moments without external hardware.',
+    },
+    {
+      title: 'Filter the map by sound category',
+      description:
+        'As a sample seeker, I want to filter the map by sound category (e.g., weather, mechanical, nature, acoustic space) so that I can find suitable source material for my compositions quickly.',
+    },
+    {
+      title: 'Set usage rights on a recording',
+      description:
+        'As a creator, I want to specify usage rights and Creative Commons licenses for my uploaded recordings so that collaborators know how they can legally incorporate my sounds into their work.',
     },
   ],
 }
