@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   typedRoutes: true,
   transpilePackages: ['@repo/ui'],
-  serverExternalPackages: ['postgres'],
+  serverExternalPackages: ['drizzle-orm', 'postgres'],
 }
 
 export default nextConfig
