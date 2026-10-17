@@ -1,46 +1,26 @@
 import { describe, expect, it } from 'vitest'
 
-import { RenderKanbanArgsSchema, storyStatusForMilestone } from './kanban'
+import { RenderKanbanArgsSchema } from './kanban'
 
 const card = {
-  title: 'Interview five buyers',
-  description: 'Ask whether they would pay before a prototype exists.',
-  milestone_category: 'Validation' as const,
-  status: 'To Test' as const,
+  title: 'Book a walk',
+  description: 'As a owner I want to book a walk so that my dog gets exercise.',
 }
 
-const columns = ['To Test', 'Building', 'Validated'] as const
-
 describe('RenderKanbanArgsSchema', () => {
-  it('accepts milestone cards and the three columns', () => {
+  it('accepts story cards with a title and description', () => {
     const parsed = RenderKanbanArgsSchema.parse({
-      columns,
-      cards: [
-        card,
-        { ...card, title: 'Landing page', milestone_category: 'Marketing' },
-        {
-          ...card,
-          title: 'Ship the concierge',
-          milestone_category: 'Execution',
-          status: 'Building',
-        },
-      ],
+      cards: [card, { title: 'Pay online' }, { title: 'Leave a review' }],
     })
 
     expect(parsed.cards).toHaveLength(3)
-    expect(parsed.cards[0]?.milestone_category).toBe('Validation')
-    expect(parsed.columns).toEqual(['To Test', 'Building', 'Validated'])
+    expect(parsed.cards[0]?.title).toBe('Book a walk')
+    expect(parsed.cards[1]?.description).toBe('')
   })
 
   it('rejects fewer than three cards', () => {
     expect(
-      RenderKanbanArgsSchema.safeParse({ columns, cards: [card, card] }).success
+      RenderKanbanArgsSchema.safeParse({ cards: [card, card] }).success
     ).toBe(false)
-  })
-
-  it('maps milestone status onto the existing board columns', () => {
-    expect(storyStatusForMilestone('To Test')).toBe('todo')
-    expect(storyStatusForMilestone('Building')).toBe('in_progress')
-    expect(storyStatusForMilestone('Validated')).toBe('done')
   })
 })

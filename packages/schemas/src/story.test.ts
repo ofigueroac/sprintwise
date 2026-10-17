@@ -13,7 +13,7 @@ describe('StorySchema', () => {
       title: 'Book a dog walk',
       description: '',
       acceptanceCriteria: [],
-      status: 'todo',
+      status: 'brainstorm',
       priority: 'medium',
       position: 0,
     })

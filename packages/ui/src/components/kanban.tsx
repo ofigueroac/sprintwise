@@ -24,9 +24,9 @@ import { KanbanCardOverlay } from './kanban-card'
 import { KanbanColumn, type KanbanColumnData } from './kanban-column'
 
 const COLUMNS: KanbanColumnData[] = [
-  { id: 'todo', label: 'To do' },
-  { id: 'in_progress', label: 'In progress' },
-  { id: 'done', label: 'Done' },
+  { id: 'brainstorm', label: 'Brainstorm' },
+  { id: 'mvp', label: 'MVP' },
+  { id: 'icebox', label: 'Icebox' },
 ]
 
 function isColumnId(id: UniqueIdentifier): id is StoryStatus {
@@ -51,9 +51,9 @@ const detectDrop: CollisionDetection = (args) => {
 
 function groupStories(stories: Story[]): Record<StoryStatus, Story[]> {
   const next: Record<StoryStatus, Story[]> = {
-    todo: [],
-    in_progress: [],
-    done: [],
+    brainstorm: [],
+    mvp: [],
+    icebox: [],
   }
 
   for (const story of stories) {

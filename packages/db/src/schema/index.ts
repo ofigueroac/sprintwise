@@ -19,9 +19,9 @@ const timestamps = {
 }
 
 export const storyStatus = pgEnum('story_status', [
-  'todo',
-  'in_progress',
-  'done',
+  'brainstorm',
+  'mvp',
+  'icebox',
 ])
 
 export const storyPriority = pgEnum('story_priority', ['low', 'medium', 'high'])
@@ -96,7 +96,7 @@ export const stories = pgTable(
     title: text().notNull(),
     description: text().notNull().default(''),
     acceptanceCriteria: jsonb().$type<string[]>().notNull().default([]),
-    status: storyStatus().notNull().default('todo'),
+    status: storyStatus().notNull().default('brainstorm'),
     priority: storyPriority().notNull().default('medium'),
     position: integer().notNull().default(0),
     ...timestamps,
