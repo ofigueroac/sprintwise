@@ -5,6 +5,7 @@ import { getCurrentUser, isAuthConfigured } from '@/auth'
 import { signInWithGitHub, signOutAction } from './auth-actions'
 import { ChatForm } from './chat/chatForm'
 import styles from './page.module.css'
+import { WakingAgent } from './waking-agent'
 
 export default async function HomePage({
   searchParams,
@@ -20,6 +21,7 @@ export default async function HomePage({
 
       <main className={styles.main}>
         <h1 className={styles.title}>Sprintwise</h1>
+        <WakingAgent />
         <p className={styles.lead}>
           Kick off a product idea. The Analyst writes a discovery brief and a
           proposed v1 you can approve and take with you.

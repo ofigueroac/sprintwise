@@ -1,0 +1,5 @@
+@reference '@repo/ui/globals.css';
+
+.notice {
+  @apply text-sm text-muted-foreground;
+}
