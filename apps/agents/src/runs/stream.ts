@@ -94,14 +94,10 @@ function hasInterrupt(chunk: unknown) {
 }
 
 async function isRunPaused(graph: AgentRuntime['graph'], projectId: string) {
-  try {
-    const snapshot = await graph.getState({
-      configurable: { thread_id: projectId },
-    })
-    return snapshot.tasks.some((task) => task.interrupts.length > 0)
-  } catch {
-    return false
-  }
+  const snapshot = await graph.getState({
+    configurable: { thread_id: projectId },
+  })
+  return snapshot.tasks.some((task) => task.interrupts.length > 0)
 }
 
 async function pauseRun(

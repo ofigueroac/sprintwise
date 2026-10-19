@@ -78,7 +78,10 @@ describe('POST /runs', () => {
 
     // FakeListChatModel pretends to be Gemini and always returns `reply`.
     const app = createApp(env, {
-      graph: createAnalystGraph(new FakeListChatModel({ responses: [reply] })),
+      graph: createAnalystGraph(
+        new FakeListChatModel({ responses: [reply] }),
+        new MemorySaver()
+      ),
       runs: memoryRuns(),
     })
 
@@ -230,6 +233,38 @@ describe('POST /runs', () => {
     expect(types).toContain('TOOL_CALL_END')
     expect(types).not.toContain('RUN_FINISHED')
     expect(markAwaitingApproval).toHaveBeenCalledWith(ids.runId)
+  })
+
+  it('marks the run failed when the checkpoint read throws', async () => {
+    const env = testEnv()
+    const markFailed = vi.fn(async () => undefined)
+    const markCompleted = vi.fn(async () => undefined)
+    const graph = createAnalystGraph(
+      new FakeListChatModel({ responses: [reply] })
+    )
+    vi.spyOn(graph, 'getState').mockRejectedValue(new Error('checkpoint down'))
+
+    const app = createApp(env, {
+      graph,
+      runs: { ...memoryRuns(), markFailed, markCompleted },
+    })
+
+    const res = await app.request('/runs', {
+      method: 'POST',
+      headers: {
+        Authorization: await bearer(env.AGENT_JWT_SECRET),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ idea: 'A dog walking app' }),
+    })
+
+    const events = eventsFromSse(await res.text())
+    expect(events.at(-1)).toMatchObject({
+      type: 'RUN_ERROR',
+      message: 'checkpoint down',
+    })
+    expect(markFailed).toHaveBeenCalledWith(ids.runId)
+    expect(markCompleted).not.toHaveBeenCalled()
   })
 
   it('emits the Kanban tool from the node update when stream chunks omit it', async () => {
