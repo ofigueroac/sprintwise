@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug agents",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/apps/agents",
+      "runtimeArgs": ["--import", "tsx", "--env-file-if-exists=.env"],
+      "program": "${workspaceFolder}/apps/agents/src/index.ts",
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal"
+    }
+  ]
+}
