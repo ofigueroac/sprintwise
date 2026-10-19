@@ -25,7 +25,9 @@ const ids = {
 
 function memoryRuns(): ReturnType<typeof createRunStore> {
   return {
-    async recordUserTurn() {},
+    async recordUserTurn() {
+      return true
+    },
     async recordAssistantMessage() {},
     async markCompleted() {},
     async markFailed() {},

@@ -29,7 +29,9 @@ const reply = 'Hello from the Analyst'
 // Same shape as the real store, but it only keeps arrays in memory.
 function memoryRuns(): ReturnType<typeof createRunStore> {
   return {
-    async recordUserTurn() {},
+    async recordUserTurn() {
+      return true
+    },
     async recordAssistantMessage() {},
     async markCompleted() {},
     async markFailed() {},
@@ -109,6 +111,30 @@ describe('POST /runs', () => {
       expect(started.threadId).toBe(ids.projectId)
       expect(started.runId).toBe(ids.runId)
     }
+  })
+
+  it('returns 409 when this run already has a user message', async () => {
+    const env = testEnv()
+    const app = createApp(env, {
+      graph: createAnalystGraph(new FakeListChatModel({ responses: [reply] })),
+      runs: {
+        ...memoryRuns(),
+        async recordUserTurn() {
+          return false
+        },
+      },
+    })
+
+    const res = await app.request('/runs', {
+      method: 'POST',
+      headers: {
+        Authorization: await bearer(env.AGENT_JWT_SECRET),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ idea: 'A dog walking app' }),
+    })
+
+    expect(res.status).toBe(409)
   })
 
   it('emits RUN_ERROR when the model throws', async () => {

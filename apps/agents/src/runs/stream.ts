@@ -119,7 +119,7 @@ export function streamRun(c: RunContext, runtime: AgentRuntime) {
   return c.req
     .json()
     .catch(() => null)
-    .then((body) => {
+    .then(async (body) => {
       // idea must be a non-empty string, max 8000 characters.
       const parsed = CreateRunBodySchema.safeParse(body)
 
@@ -138,6 +138,20 @@ export function streamRun(c: RunContext, runtime: AgentRuntime) {
         messageId: randomUUID(),
       })
 
+      // Save the project, the run row, and the user's idea before streaming.
+      // False means this run already has a user message, so do not start again.
+      const started = await runtime.runs.recordUserTurn({
+        userId: token.sub,
+        projectId: token.projectId,
+        runId: token.runId,
+        name: projectName(idea),
+        idea,
+      })
+
+      if (!started) {
+        return c.json({ error: 'Run already started' }, 409)
+      }
+
       // Keep the HTTP connection open and push events as they happen.
       return streamSSE(c, async (stream) => {
         // Full assistant text, built from every TEXT_MESSAGE_CONTENT delta.
@@ -146,15 +160,6 @@ export function streamRun(c: RunContext, runtime: AgentRuntime) {
         try {
           // Tell the browser the run has started.
           await writeEvent(stream, mapper.start())
-
-          // Save the project, the run row, and the user's idea in Neon.
-          await runtime.runs.recordUserTurn({
-            userId: token.sub,
-            projectId: token.projectId,
-            runId: token.runId,
-            name: projectName(idea),
-            idea,
-          })
 
           // Start the Analyst graph. Checkpoints key off projectId.
           const graphStream = await runtime.graph.stream(

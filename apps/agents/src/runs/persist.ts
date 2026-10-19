@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import type { Database } from '@repo/db'
 import { messages, projects, runs, stories, users } from '@repo/db/schema'
 import type { RenderKanbanArgs } from '@repo/schemas'
@@ -15,7 +15,7 @@ type UserTurn = {
 export function createRunStore(db: Database) {
   return {
     async recordUserTurn({ userId, projectId, runId, name, idea }: UserTurn) {
-      await db.transaction(async (transaction) => {
+      return db.transaction(async (transaction) => {
         const [user] = await transaction
           .select({ id: users.id })
           .from(users)
@@ -45,11 +45,30 @@ export function createRunStore(db: Database) {
           })
           .onConflictDoNothing({ target: runs.id })
 
+        // Hold the run row so a second request waits until this message exists
+        await transaction
+          .select({ id: runs.id })
+          .from(runs)
+          .where(eq(runs.id, runId))
+          .for('update')
+
+        const [existing] = await transaction
+          .select({ id: messages.id })
+          .from(messages)
+          .where(and(eq(messages.runId, runId), eq(messages.role, 'user')))
+          .limit(1)
+
+        if (existing) {
+          return false
+        }
+
         await transaction.insert(messages).values({
           runId,
           role: 'user',
           content: idea,
         })
+
+        return true
       })
     },
 
