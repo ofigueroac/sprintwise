@@ -79,24 +79,26 @@ export function createRunStore(db: Database) {
         .where(eq(runs.id, runId))
     },
     async saveKanbanStories(projectId: string, args: RenderKanbanArgs) {
-      await db.delete(stories).where(eq(stories.projectId, projectId))
+      await db.transaction(async (transaction) => {
+        await db.delete(stories).where(eq(stories.projectId, projectId))
 
-      if (args.cards.length === 0) {
-        return
-      }
+        if (args.cards.length === 0) {
+          return
+        }
 
-      await db.insert(stories).values(
-        args.cards.map((card, index) => ({
-          id: randomUUID(),
-          projectId,
-          title: card.title,
-          description: card.description,
-          acceptanceCriteria: [],
-          status: 'brainstorm' as const,
-          priority: 'medium' as const,
-          position: index,
-        }))
-      )
+        await db.insert(stories).values(
+          args.cards.map((card, index) => ({
+            id: randomUUID(),
+            projectId,
+            title: card.title,
+            description: card.description,
+            acceptanceCriteria: [],
+            status: 'brainstorm' as const,
+            priority: 'medium' as const,
+            position: index,
+          }))
+        )
+      })
     },
   }
 }
