@@ -99,13 +99,15 @@ export function createRunStore(db: Database) {
     },
     async saveKanbanStories(projectId: string, args: RenderKanbanArgs) {
       await db.transaction(async (transaction) => {
-        await db.delete(stories).where(eq(stories.projectId, projectId))
+        await transaction
+          .delete(stories)
+          .where(eq(stories.projectId, projectId))
 
         if (args.cards.length === 0) {
           return
         }
 
-        await db.insert(stories).values(
+        await transaction.insert(stories).values(
           args.cards.map((card, index) => ({
             id: randomUUID(),
             projectId,
