@@ -1,7 +1,7 @@
 import { AIMessage, AIMessageChunk } from '@langchain/core/messages'
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { FakeListChatModel } from '@langchain/core/utils/testing'
-import { MemorySaver } from '@langchain/langgraph'
+import { GraphInterrupt, MemorySaver } from '@langchain/langgraph'
 import { SignJWT } from 'jose'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -235,6 +235,42 @@ describe('POST /runs', () => {
     expect(types[0]).toBe('RUN_STARTED')
     expect(types).toContain('TOOL_CALL_END')
     expect(types).not.toContain('RUN_FINISHED')
+    expect(markAwaitingApproval).toHaveBeenCalledWith(ids.runId)
+  })
+
+  it('saves the reply when the graph throws an interrupt', async () => {
+    const env = testEnv()
+    const recordAssistantMessage = vi.fn(async () => undefined)
+    const markAwaitingApproval = vi.fn(async () => undefined)
+    const graph = createAnalystGraph(
+      new FakeListChatModel({ responses: [reply] })
+    )
+    vi.spyOn(graph, 'stream').mockImplementation(async () => {
+      async function* chunks() {
+        yield ['messages', [new AIMessageChunk({ content: reply }), {}]]
+        throw new GraphInterrupt()
+      }
+
+      return chunks() as Awaited<ReturnType<typeof graph.stream>>
+    })
+
+    const app = createApp(env, {
+      graph,
+      runs: { ...memoryRuns(), recordAssistantMessage, markAwaitingApproval },
+    })
+
+    const res = await app.request('/runs', {
+      method: 'POST',
+      headers: {
+        Authorization: await bearer(env.AGENT_JWT_SECRET),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ idea: 'A dog walking app' }),
+    })
+
+    const types = eventsFromSse(await res.text()).map((event) => event.type)
+    expect(types).not.toContain('RUN_FINISHED')
+    expect(recordAssistantMessage).toHaveBeenCalledWith(ids.runId, reply)
     expect(markAwaitingApproval).toHaveBeenCalledWith(ids.runId)
   })
 

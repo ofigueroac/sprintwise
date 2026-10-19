@@ -184,6 +184,13 @@ export function streamRun(c: RunContext, runtime: AgentRuntime) {
           }
         } catch (error) {
           if (isGraphInterrupt(error)) {
+            if (assistantText) {
+              await runtime.runs.recordAssistantMessage(
+                token.runId,
+                assistantText
+              )
+            }
+
             for (const event of await pauseRun(runtime, mapper, token.runId)) {
               await writeEvent(stream, event)
             }
