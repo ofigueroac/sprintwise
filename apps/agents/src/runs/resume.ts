@@ -127,10 +127,9 @@ export function resumeRun(c: RunContext, runtime: AgentRuntime) {
             return
           }
 
+          console.error(error)
           await runtime.runs.markFailed(token.runId).catch(() => undefined)
-          const message =
-            error instanceof Error ? error.message : 'Could not resume the run'
-          await writeEvent(stream, mapper.error(message))
+          await writeEvent(stream, mapper.error('Could not resume the run'))
         }
       })
     })

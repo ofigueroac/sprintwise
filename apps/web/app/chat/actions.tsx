@@ -52,15 +52,8 @@ export async function createRunToken(idea: string) {
       })
     })
   } catch (error) {
-    const cause = error instanceof Error ? error.cause : undefined
-    const detail =
-      cause instanceof Error
-        ? cause.message
-        : error instanceof Error
-          ? error.message
-          : 'Could not save the project.'
-
-    return { error: detail }
+    console.error(error)
+    return { error: 'Could not save the project.' }
   }
 
   // The browser will send this JWT when it opens the agent stream

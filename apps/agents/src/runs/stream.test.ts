@@ -174,7 +174,7 @@ describe('POST /runs', () => {
     expect(types).not.toContain('RUN_FINISHED')
     expect(failed).toMatchObject({
       type: 'RUN_ERROR',
-      message: 'Gemini is down',
+      message: 'The Analyst run failed',
     })
   })
 
@@ -261,7 +261,7 @@ describe('POST /runs', () => {
     const events = eventsFromSse(await res.text())
     expect(events.at(-1)).toMatchObject({
       type: 'RUN_ERROR',
-      message: 'checkpoint down',
+      message: 'The Analyst run failed',
     })
     expect(markFailed).toHaveBeenCalledWith(ids.runId)
     expect(markCompleted).not.toHaveBeenCalled()

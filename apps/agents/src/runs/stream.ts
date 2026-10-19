@@ -228,13 +228,11 @@ export function streamRun(c: RunContext, runtime: AgentRuntime) {
           }
 
           // Something failed model, database, or mapping
+          console.error(error)
           await runtime.runs.markFailed(token.runId).catch(() => undefined)
 
-          const message =
-            error instanceof Error ? error.message : 'The Analyst run failed'
-
           // Tell the browser the run failed. Do not send RUN_FINISHED after this.
-          await writeEvent(stream, mapper.error(message))
+          await writeEvent(stream, mapper.error('The Analyst run failed'))
         }
       })
     })
