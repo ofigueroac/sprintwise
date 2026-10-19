@@ -2,7 +2,7 @@ import { Button } from '@repo/ui/components'
 
 import { getCurrentUser, isAuthConfigured } from '@/auth'
 
-import { signInWithGitHub, signOutAction } from './auth-actions'
+import { signInAsDemo, signInWithGitHub, signOutAction } from './auth-actions'
 import { ChatForm } from './chat/chatForm'
 import styles from './page.module.css'
 import { WakingAgent } from './waking-agent'
@@ -62,9 +62,14 @@ function SignedOut({
 }) {
   return (
     <div className={styles.signedOut}>
+      <form action={signInAsDemo}>
+        <Button type="submit" size="lg">
+          Try the demo
+        </Button>
+      </form>
       {authConfigured ? (
         <form action={signInWithGitHub}>
-          <Button type="submit" size="lg">
+          <Button type="submit" variant="outline" size="lg">
             Sign in with GitHub
           </Button>
         </form>

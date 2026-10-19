@@ -1,11 +1,12 @@
 import { eq } from 'drizzle-orm'
 import NextAuth from 'next-auth'
+import Credentials from 'next-auth/providers/credentials'
 import GitHub from 'next-auth/providers/github'
 
 import { users } from '@repo/db/schema'
 
 import { getDb } from './lib/db'
-import { upsertGithubUser } from './lib/users'
+import { DEMO_GITHUB_ID, ensureDemoUser, upsertGithubUser } from './lib/users'
 
 // True only when the GitHub app id and secret are both set
 export const isAuthConfigured = Boolean(
@@ -22,11 +23,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Ask GitHub for the public profile and the email
       authorization: { params: { scope: 'read:user user:email' } },
     }),
+    Credentials({
+      credentials: {},
+      authorize: async () => {
+        await ensureDemoUser()
+        return { id: DEMO_GITHUB_ID }
+      },
+    }),
   ],
   // Keep the session in a signed cookie instead of a database row
   session: { strategy: 'jwt' },
   callbacks: {
-    async signIn({ profile }) {
+    async signIn({ account, profile }) {
+      if (account?.provider === 'credentials') {
+        return true
+      }
+
       const githubProfile = readGithubProfile(profile)
 
       // Block login if GitHub did not send an id and a username
@@ -39,12 +51,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       return true
     },
-    async jwt({ token, profile }) {
+    async jwt({ token, profile, user }) {
       const githubProfile = readGithubProfile(profile)
 
       // On the first login stash the GitHub id inside the cookie
       if (githubProfile) {
         token.githubId = githubProfile.id
+      }
+
+      if (user?.id === DEMO_GITHUB_ID) {
+        token.githubId = DEMO_GITHUB_ID
       }
 
       return token

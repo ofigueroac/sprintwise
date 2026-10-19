@@ -10,6 +10,18 @@ export type GithubProfile = {
   avatarUrl: string | null
 }
 
+export const DEMO_GITHUB_ID = 'demo'
+
+export async function ensureDemoUser() {
+  return upsertGithubUser({
+    id: DEMO_GITHUB_ID,
+    login: 'demo',
+    name: 'Demo',
+    email: null,
+    avatarUrl: null,
+  })
+}
+
 export async function upsertGithubUser(profile: GithubProfile) {
   const [user] = await getDb()
     .insert(users)

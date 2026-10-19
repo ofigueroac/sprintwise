@@ -63,7 +63,6 @@ export type AgentRunContextValue = {
   onIdeaKeyDown: (event: KeyboardEvent<HTMLTextAreaElement>) => void
   onApprove: () => void
   onReject: () => void
-  onRetry: () => void
 }
 
 const AgentRunContext = createContext<AgentRunContextValue | null>(null)
@@ -228,9 +227,6 @@ function AgentRunRoot({ children }: { children: ReactNode }) {
     },
     onReject: () => {
       void onDecision(false)
-    },
-    onRetry: () => {
-      void startIdea()
     },
   }
 
@@ -428,20 +424,13 @@ function Board() {
 }
 
 function Retry() {
-  const { error, status, pending, onRetry } = useAgentRunContext()
+  const { error, status } = useAgentRunContext()
 
   if (!error || status !== AGENT_STATUS.ERROR) {
     return null
   }
 
-  return (
-    <RunErrorCard
-      message={error.message}
-      code={error.code}
-      onRetry={onRetry}
-      pending={pending}
-    />
-  )
+  return <RunErrorCard message={error.message} code={error.code} />
 }
 
 export const AgentRun = Object.assign(AgentRunRoot, {

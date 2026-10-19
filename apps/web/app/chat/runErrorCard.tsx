@@ -1,40 +1,17 @@
 'use client'
 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-  Button,
-} from '@repo/ui/components'
-
-import styles from './runErrorCard.module.css'
+import { Alert, AlertDescription, AlertTitle } from '@repo/ui/components'
 
 export type RunErrorCardProps = {
   message: string
   code?: string
-  onRetry: () => void
-  pending?: boolean
 }
 
-export function RunErrorCard({
-  message,
-  code,
-  onRetry,
-  pending = false,
-}: RunErrorCardProps) {
+export function RunErrorCard({ message, code }: RunErrorCardProps) {
   return (
-    <Alert variant="destructive" className={styles.alert}>
-      <AlertTitle className={styles.title}>{message}</AlertTitle>
-      {code ? (
-        <AlertDescription className={styles.description}>
-          {code}
-        </AlertDescription>
-      ) : null}
-      <div className={styles.action}>
-        <Button type="button" onClick={onRetry} loading={pending}>
-          Retry
-        </Button>
-      </div>
+    <Alert variant="destructive">
+      <AlertTitle>{message}</AlertTitle>
+      {code ? <AlertDescription>{code}</AlertDescription> : null}
     </Alert>
   )
 }
