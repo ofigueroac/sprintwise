@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type KeyboardEvent,
   type ReactNode,
@@ -76,6 +77,7 @@ function AgentRunRoot({ children }: { children: ReactNode }) {
   const [pending, setPending] = useState(false)
   const [projectId, setProjectId] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const startingRef = useRef(false)
   const { status, messages, tools, error, runId, start, resume, restore } =
     useAgentRun()
 
@@ -109,10 +111,11 @@ function AgentRunRoot({ children }: { children: ReactNode }) {
   }, [restore])
 
   async function startIdea() {
-    if (busy || trimmedIdea.length === 0) {
+    if (startingRef.current || busy || trimmedIdea.length === 0) {
       return
     }
 
+    startingRef.current = true
     setActionError(null)
     setPending(true)
 
@@ -131,6 +134,7 @@ function AgentRunRoot({ children }: { children: ReactNode }) {
         idea: trimmedIdea,
       })
     } finally {
+      startingRef.current = false
       setPending(false)
     }
   }
