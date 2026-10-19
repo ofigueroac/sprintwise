@@ -5,16 +5,13 @@ import { INTERRUPT, isGraphInterrupt } from '@langchain/langgraph'
 import type { Context } from 'hono'
 import { streamSSE } from 'hono/streaming'
 
-import {
-  AgUiEventSchema,
-  CreateRunBodySchema,
-  type AgUiEvent,
-} from '@repo/schemas'
+import { CreateRunBodySchema } from '@repo/schemas'
 
 import type { AgentAuthVariables } from '../auth/middleware'
 import {
+  asMessageChunk,
   createLangGraphAgUiMapper,
-  type LangGraphStreamChunk,
+  writeEvent,
 } from '../agui/from-langgraph'
 import type { createAnalystGraph } from '../graphs/analyst'
 import type { createRunStore } from './persist'
@@ -31,33 +28,6 @@ type RunContext = Context<{ Variables: AgentAuthVariables }>
 function projectName(idea: string) {
   const oneLine = idea.trim().replaceAll('\n', ' ')
   return oneLine.slice(0, 80) || 'Untitled idea'
-}
-
-// Check the event against our Zod union, then send it as one SSE frame.
-async function writeEvent(
-  stream: {
-    writeSSE: (message: { event: string; data: string }) => Promise<void>
-  },
-  payload: AgUiEvent
-) {
-  const event = AgUiEventSchema.parse(payload)
-  await stream.writeSSE({
-    event: event.type,
-    data: JSON.stringify(event),
-  })
-}
-
-function asMessageChunk(chunk: unknown): LangGraphStreamChunk | null {
-  if (!Array.isArray(chunk) || chunk.length === 0) {
-    return null
-  }
-
-  const payload = chunk[0] === 'messages' ? chunk[1] : chunk
-  if (!Array.isArray(payload) || typeof payload[0]?.getType !== 'function') {
-    return null
-  }
-
-  return payload as LangGraphStreamChunk
 }
 
 function analystMessage(chunk: unknown): object | null {

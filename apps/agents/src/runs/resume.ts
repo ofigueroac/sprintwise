@@ -4,16 +4,13 @@ import { Command, isGraphInterrupt } from '@langchain/langgraph'
 import type { Context } from 'hono'
 import { streamSSE } from 'hono/streaming'
 
-import {
-  AgUiEventSchema,
-  ResumeRunBodySchema,
-  type AgUiEvent,
-} from '@repo/schemas'
+import { ResumeRunBodySchema } from '@repo/schemas'
 
 import type { AgentAuthVariables } from '../auth/middleware'
 import {
+  asMessageChunk,
   createLangGraphAgUiMapper,
-  type LangGraphStreamChunk,
+  writeEvent,
 } from '../agui/from-langgraph'
 import type { createAnalystGraph } from '../graphs/analyst'
 import type { createRunStore } from './persist'
@@ -25,38 +22,6 @@ type AgentRuntime = {
 
 // Hono request that already passed the JWT check, so agentToken is set.
 type RunContext = Context<{ Variables: AgentAuthVariables }>
-
-// Check the event against our Zod union, then send it as one SSE frame.
-async function writeEvent(
-  stream: {
-    writeSSE: (message: { event: string; data: string }) => Promise<void>
-  },
-  payload: AgUiEvent
-) {
-  const event = AgUiEventSchema.parse(payload)
-  await stream.writeSSE({
-    event: event.type,
-    data: JSON.stringify(event),
-  })
-}
-
-// Updates and other modes are ignored we only map assistant tokens.
-function asMessageChunk(chunk: unknown): LangGraphStreamChunk | null {
-  if (!Array.isArray(chunk) || chunk.length === 0) {
-    return null
-  }
-
-  const payload = chunk[0] === 'messages' ? chunk[1] : chunk
-  if (
-    !Array.isArray(payload) ||
-    payload.length < 2 ||
-    typeof payload[0]?.getType !== 'function'
-  ) {
-    return null
-  }
-
-  return payload as unknown as LangGraphStreamChunk
-}
 
 // POST /runs/:id/resume continues a graph that hit interrupt()
 export function resumeRun(c: RunContext, runtime: AgentRuntime) {

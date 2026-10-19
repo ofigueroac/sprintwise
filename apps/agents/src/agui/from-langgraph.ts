@@ -1,6 +1,6 @@
 import { EventType } from '@ag-ui/core'
 
-import type { AgUiEvent } from '@repo/schemas'
+import { AgUiEventSchema, type AgUiEvent } from '@repo/schemas'
 
 export type LangGraphToolCall = {
   id?: string
@@ -162,4 +162,36 @@ export function createLangGraphAgUiMapper({
       return { type: EventType.RUN_ERROR, message }
     },
   }
+}
+
+// Check the event against our Zod union, then send it as one SSE frame
+export async function writeEvent(
+  stream: {
+    writeSSE: (message: { event: string; data: string }) => Promise<void>
+  },
+  payload: AgUiEvent
+) {
+  const event = AgUiEventSchema.parse(payload)
+  await stream.writeSSE({
+    event: event.type,
+    data: JSON.stringify(event),
+  })
+}
+
+// A messages-mode chunk is [message, metadata]. Updates and other modes are skipped
+export function asMessageChunk(chunk: unknown): LangGraphStreamChunk | null {
+  if (!Array.isArray(chunk) || chunk.length === 0) {
+    return null
+  }
+
+  const payload = chunk[0] === 'messages' ? chunk[1] : chunk
+  if (
+    !Array.isArray(payload) ||
+    payload.length < 2 ||
+    typeof payload[0]?.getType !== 'function'
+  ) {
+    return null
+  }
+
+  return payload as unknown as LangGraphStreamChunk
 }
