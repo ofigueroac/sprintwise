@@ -32,8 +32,7 @@ export async function createRunToken(idea: string) {
   const projectId = randomUUID()
   const runId = randomUUID()
   // Projects table wants a short title so we take the first 80 characters
-  const name =
-    parsed.data.idea.replaceAll('\n', ' ').slice(0, 80) || 'untitle idea'
+  const name = parsed.data.idea.replaceAll('\n', ' ').slice(0, 80)
 
   try {
     // One transaction so we never get a project without its run row

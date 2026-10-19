@@ -24,12 +24,6 @@ type AgentRuntime = {
 // Hono request that already passed the JWT check, so agentToken is set.
 type RunContext = Context<{ Variables: AgentAuthVariables }>
 
-// Short project title from the idea (the projects table needs a name).
-function projectName(idea: string) {
-  const oneLine = idea.trim().replaceAll('\n', ' ')
-  return oneLine.slice(0, 80) || 'Untitled idea'
-}
-
 function analystMessage(chunk: unknown): object | null {
   if (!Array.isArray(chunk) || chunk[0] !== 'updates') {
     return null
@@ -110,7 +104,6 @@ export function streamRun(c: RunContext, runtime: AgentRuntime) {
         userId: token.sub,
         projectId: token.projectId,
         runId: token.runId,
-        name: projectName(idea),
         idea,
       })
 

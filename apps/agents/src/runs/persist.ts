@@ -1,20 +1,19 @@
 import { randomUUID } from 'node:crypto'
 import { and, eq } from 'drizzle-orm'
 import type { Database } from '@repo/db'
-import { messages, projects, runs, stories, users } from '@repo/db/schema'
+import { messages, runs, stories, users } from '@repo/db/schema'
 import type { RenderKanbanArgs } from '@repo/schemas'
 
 type UserTurn = {
   userId: string
   projectId: string
   runId: string
-  name: string
   idea: string
 }
 
 export function createRunStore(db: Database) {
   return {
-    async recordUserTurn({ userId, projectId, runId, name, idea }: UserTurn) {
+    async recordUserTurn({ userId, projectId, runId, idea }: UserTurn) {
       return db.transaction(async (transaction) => {
         const [user] = await transaction
           .select({ id: users.id })
@@ -25,16 +24,6 @@ export function createRunStore(db: Database) {
         if (!user) {
           throw Error(`No users row for ${userId} Sign out and back in `)
         }
-
-        await transaction
-          .insert(projects)
-          .values({
-            id: projectId,
-            userId,
-            name,
-            idea,
-          })
-          .onConflictDoNothing({ target: projects.id })
 
         await transaction
           .insert(runs)
