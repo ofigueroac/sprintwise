@@ -91,6 +91,16 @@ export function createRunStore(db: Database) {
       await db.update(runs).set({ status: 'failed' }).where(eq(runs.id, runId))
     },
 
+    async status(runId: string) {
+      const [run] = await db
+        .select({ status: runs.status })
+        .from(runs)
+        .where(eq(runs.id, runId))
+        .limit(1)
+
+      return run?.status ?? null
+    },
+
     async markAwaitingApproval(runId: string) {
       await db
         .update(runs)

@@ -64,7 +64,7 @@ export function resumeRun(c: RunContext, runtime: AgentRuntime) {
   return c.req
     .json()
     .catch(() => null)
-    .then((body) => {
+    .then(async (body) => {
       // approved must be a boolean so we know whether to finish or reject.
       const parsed = ResumeRunBodySchema.safeParse(body)
 
@@ -75,6 +75,15 @@ export function resumeRun(c: RunContext, runtime: AgentRuntime) {
       // Claims from the Bearer token which project and run to continue.
       const token = c.get('agentToken')
       const approved = parsed.data.approved
+
+      if (c.req.param('id') !== token.runId) {
+        return c.json({ error: 'Run not found' }, 404)
+      }
+
+      const status = await runtime.runs.status(token.runId)
+      if (status !== 'awaiting_approval') {
+        return c.json({ error: 'This run is not waiting for approval' }, 409)
+      }
 
       // One mapper for this resume. threadId is still the conversation (project).
       const mapper = createLangGraphAgUiMapper({

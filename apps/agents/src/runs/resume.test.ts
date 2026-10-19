@@ -32,6 +32,9 @@ function memoryRuns(): ReturnType<typeof createRunStore> {
     async markCompleted() {},
     async markFailed() {},
     async saveKanbanStories() {},
+    async status() {
+      return 'awaiting_approval' as const
+    },
     async markAwaitingApproval() {},
   }
 }
@@ -165,5 +168,51 @@ describe('POST /runs/:id/resume', () => {
       message: 'Scope rejected',
     })
     expect(markFailed).toHaveBeenCalledWith(ids.runId)
+  })
+
+  it('returns 404 when the url run id does not match the token', async () => {
+    const env = testEnv()
+    const app = createApp(env, {
+      graph: createAnalystGraph(kanbanModel(), new MemorySaver()),
+      runs: memoryRuns(),
+    })
+
+    const res = await app.request(
+      '/runs/44444444-4444-4444-8444-444444444444/resume',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: await bearer(env.AGENT_JWT_SECRET),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ approved: true }),
+      }
+    )
+
+    expect(res.status).toBe(404)
+  })
+
+  it('returns 409 when the run is not waiting for approval', async () => {
+    const env = testEnv()
+    const app = createApp(env, {
+      graph: createAnalystGraph(kanbanModel(), new MemorySaver()),
+      runs: {
+        ...memoryRuns(),
+        async status() {
+          return 'completed' as const
+        },
+      },
+    })
+
+    const res = await app.request(`/runs/${ids.runId}/resume`, {
+      method: 'POST',
+      headers: {
+        Authorization: await bearer(env.AGENT_JWT_SECRET),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ approved: true }),
+    })
+
+    expect(res.status).toBe(409)
   })
 })

@@ -36,6 +36,9 @@ function memoryRuns(): ReturnType<typeof createRunStore> {
     async markCompleted() {},
     async markFailed() {},
     async saveKanbanStories() {},
+    async status() {
+      return 'awaiting_approval' as const
+    },
     async markAwaitingApproval() {},
   }
 }
