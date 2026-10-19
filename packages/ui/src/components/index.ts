@@ -36,3 +36,4 @@ export {
   CollapsibleContent,
   CollapsibleTrigger,
 } from './collapsible'
+export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'

@@ -24,6 +24,10 @@ import {
   FieldDescription,
   FieldLabel,
   Skeleton,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
   Textarea,
 } from '@repo/ui/components'
 
@@ -285,6 +289,53 @@ function Composer() {
   )
 }
 
+function briefSections(content: string) {
+  const chunks = content.split(/^## /m).filter((chunk) => chunk.trim())
+  if (!content.trimStart().startsWith('## ')) {
+    return []
+  }
+
+  return chunks.map((chunk) => {
+    const breakAt = chunk.indexOf('\n')
+    const title = (breakAt === -1 ? chunk : chunk.slice(0, breakAt)).trim()
+    const body = breakAt === -1 ? '' : chunk.slice(breakAt + 1).trim()
+    return { title, body }
+  })
+}
+
+function inlineMarks(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={index}>{part.slice(2, -2)}</strong>
+    }
+    return part
+  })
+}
+
+function BriefBody({ text }: { text: string }) {
+  const blocks = text.split(/\n\n+/).filter((block) => block.trim())
+
+  return (
+    <div className={styles.brief}>
+      {blocks.map((block) => {
+        const lines = block.split('\n').filter((line) => line.trim())
+        const list = lines.every((line) => line.trimStart().startsWith('- '))
+        if (list) {
+          return (
+            <ul key={block}>
+              {lines.map((line) => (
+                <li key={line}>{inlineMarks(line.trimStart().slice(2))}</li>
+              ))}
+            </ul>
+          )
+        }
+
+        return <p key={block}>{inlineMarks(block)}</p>
+      })}
+    </div>
+  )
+}
+
 function Messages() {
   const { busy, messages } = useAgentRunContext()
   let body: ReactNode = 'The reply will stream here.'
@@ -292,11 +343,35 @@ function Messages() {
   if (messages.length > 0) {
     body = (
       <>
-        {messages.map((message) => (
-          <MessageError key={message.id} resetKeys={[message.id]}>
-            <p className={styles.assistantBubble}>{message.content}</p>
-          </MessageError>
-        ))}
+        {messages.map((message) => {
+          const sections = briefSections(message.content)
+          if (sections.length === 0) {
+            return (
+              <MessageError key={message.id} resetKeys={[message.id]}>
+                <p className={styles.plain}>{message.content}</p>
+              </MessageError>
+            )
+          }
+
+          return (
+            <MessageError key={message.id} resetKeys={[message.id]}>
+              <Tabs defaultValue="0">
+                <TabsList>
+                  {sections.map((section, index) => (
+                    <TabsTrigger key={index} value={String(index)}>
+                      {section.title}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+                {sections.map((section, index) => (
+                  <TabsContent key={index} value={String(index)}>
+                    <BriefBody text={section.body} />
+                  </TabsContent>
+                ))}
+              </Tabs>
+            </MessageError>
+          )
+        })}
       </>
     )
   } else if (busy) {

@@ -1,7 +1,7 @@
 @reference '@repo/ui/globals.css';
 
 .layout {
-  @apply grid grid-cols-1 items-start gap-6 xl:grid-cols-2;
+  @apply grid grid-cols-1 items-start gap-6 md:grid-cols-2;
 }
 
 .transcript {
@@ -12,8 +12,20 @@
   @apply cursor-pointer text-sm font-medium;
 }
 
-.assistantBubble {
-  @apply max-w-[85%] rounded-lg px-3 py-2;
+.plain {
+  @apply whitespace-pre-wrap;
+}
+
+.brief {
+  @apply flex flex-col gap-3 leading-relaxed;
+}
+
+.brief ul {
+  @apply list-disc space-y-2 pl-5;
+}
+
+.brief strong {
+  @apply font-medium;
 }
 
 .chat {
@@ -29,7 +41,7 @@
 }
 
 .log {
-  @apply border-border min-h-40 flex-1 whitespace-pre-wrap rounded-lg border px-4 py-3 text-sm;
+  @apply border-border min-h-40 flex-1 rounded-lg border px-4 py-3 text-sm;
 }
 
 .skeletonStack {
