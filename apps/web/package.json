@@ -17,6 +17,7 @@
     "@repo/ui": "workspace:*",
     "drizzle-orm": "catalog:",
     "jose": "catalog:",
+    "motion": "catalog:",
     "next": "catalog:",
     "next-auth": "catalog:",
     "react": "catalog:",

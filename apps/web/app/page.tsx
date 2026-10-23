@@ -6,7 +6,7 @@ import { signInAsDemo, signInWithGitHub, signOutAction } from './auth-actions'
 import { ChatForm } from './chat/chatForm'
 import styles from './page.module.css'
 import { WakingAgent } from './waking-agent'
-
+import { TechStack } from './teckStack'
 export default async function HomePage({
   searchParams,
 }: {
@@ -30,7 +30,11 @@ export default async function HomePage({
         {user ? (
           <ChatForm />
         ) : (
-          <SignedOut authConfigured={isAuthConfigured} error={error} />
+          <>
+            <SignedOut authConfigured={isAuthConfigured} error={error} />
+            <h2 className={styles.stackHeading}>Built With</h2>
+            <TechStack />
+          </>
         )}
       </main>
     </>

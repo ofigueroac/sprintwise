@@ -1,0 +1,30 @@
+@reference '@repo/ui/globals.css';
+
+.list {
+  @apply flex list-none flex-wrap items-stretch gap-5 p-0;
+}
+
+.item {
+  @apply relative flex items-center justify-center rounded-lg border border-border bg-card px-5 py-5 outline-none focus-visible:ring-3 focus-visible:ring-ring/50;
+}
+
+.name {
+  @apply pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-1/2 -translate-x-1/2 rounded-md bg-foreground px-2 py-1 text-xs whitespace-nowrap text-background opacity-0;
+}
+
+.item:hover .name,
+.item:focus-visible .name {
+  @apply opacity-100;
+}
+
+.plate {
+  @apply flex size-16 items-center justify-center;
+}
+
+.plateDark {
+  @apply rounded-md bg-neutral-950 p-1.5;
+}
+
+.icon {
+  @apply size-full object-contain;
+}
