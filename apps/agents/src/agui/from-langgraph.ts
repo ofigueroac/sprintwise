@@ -10,6 +10,7 @@ export type LangGraphToolCall = {
 export type LangGraphStreamMessage = {
   getType: () => string
   content: unknown
+  tool_calls?: LangGraphToolCall[]
 }
 
 export function toolCalls(message: object): LangGraphToolCall[] {
