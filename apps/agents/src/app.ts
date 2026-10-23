@@ -22,7 +22,8 @@ export function createApp(env: AgentEnv, runtime?: AgentRuntime) {
     cors({
       origin: env.WEB_ORIGIN,
       allowMethods: ['GET', 'POST', 'OPTIONS'],
-      allowHeaders: ['Authorization', 'Content-Type'],
+      // Accept is on the preflight because the stream asks for text/event-stream
+      allowHeaders: ['Authorization', 'Content-Type', 'Accept'],
     })
   )
 
